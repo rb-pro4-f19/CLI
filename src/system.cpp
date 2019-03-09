@@ -1,28 +1,16 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <windows.h>
-
 #include "system.h"
 
 //// Constants ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-constexpr int 	KEY_WAIT				= 30;											// Duration between key presses
-constexpr int 	KEY_DURATION_MOVE		= 250;											// Duration of a simulated key press (moving)
-constexpr int 	KEY_DURATION_PRIMARY	= 25;											// Duration of a simulated key press (primary)
-
 //// Definitions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Initialize the CLI
 void init_cli()
 {
 	system("cls");
-	//std::cout << "Ear Rape Simulator 1.1.0\n\n";
+	std::cout << "Pan-Tilt System 1.0.0\n\n";
 }
 
-// ...
-void cli_main()
+void cli()
 {
 	// show >
 	std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -38,29 +26,45 @@ void cli_main()
 		return;
 	}
 
-	// execute input command
-	execute_cmd(input);
+	// parse input command
+	parse_input(input);
 }
 
-void execute_cmd(std::string input)
+void parse_input(std::string input)
 {
-	// parse cmd
-	std::string cmd = input.substr(0, input.find(' '));
-	std::string args = "";
+	// split input delimited by spaces into vector of strings
+	std::istringstream input_iss(input);
+	std::string args = input;
 
-	// check if command exists
-	if (command_map.count(cmd) == 0)
+	std::vector<std::string> input_split(std::istream_iterator<std::string>{input_iss}, std::istream_iterator<std::string>());
+
+	auto search_tree = &commands;
+
+	// iterate words of command string
+	for (const auto& word : input_split)
 	{
-		std::cout << "The command \"" << cmd << "\" is invalid.\n";
-		return;
+		// check if command exists
+		if (!search_tree->has_command(word))
+			break;
+
+		// update remaining args
+		args.erase(args.find(word), word.length());
+
+		// check if command takes specified arguments
+		if (search_tree->get_command(word)->has_children())
+		{
+			search_tree = search_tree->get_command(word)->child_cmds;
+			continue;
+		}
+		// otherwise run command with unspecified arguments
+		else
+		{
+			std::cout << "\n";
+			search_tree->get_command(word)->func(args);
+			return;
+		}
 	}
 
-	// check whether command has arguments; parse args if true
-	if (input.find(' ') != -1)
-	{
-		args = input.substr(cmd.length() + 1);
-	}
-
-	// call appropriate function from map
-	command_map[cmd](args);
+	// catch all exceptions here
+	std::cout << "The command \"" << input << "\" is invalid.\n";
 }

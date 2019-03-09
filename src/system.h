@@ -1,19 +1,65 @@
 #pragma once
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <iterator>
+#include <sstream>
+#include <unordered_map>
+#include <windows.h>
 #include <thread>
+#include <algorithm>
+
 
 //// Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Variables
-extern std::unordered_map<std::string, void(*)(std::string args)> command_map;
+struct cmd;
+struct cmd_container;
+extern cmd_container commands;
 
-// Modes
+enum class SYSTEM_MODE;
+enum class OPERATION_MODE;
+
+void parse_input(std::string input);
+void init_cli();
+void cli();
 
 struct cmd
 {
 	std::string name;
 	void(*func)(std::string args) = nullptr;
-	std::vector<cmd> args = {};
+	cmd_container* child_cmds = nullptr;
 	std::string help = "No information available.";
+
+	bool has_children() { return this->child_cmds != nullptr; }
+};
+
+struct cmd_container
+{
+	cmd_container(std::initializer_list<cmd> init)
+		: commands(init) {};
+
+	std::vector<cmd> commands = {};
+
+	int	 size() { return commands.size(); }
+
+	bool has_command(std::string cmd_name)
+	{
+		return (std::any_of(this->commands.begin(), this->commands.end(), [&](cmd &cmd_element) { return cmd_element.name == cmd_name; }));
+	}
+
+	bool has_children(std::string cmd_name) { return true; }
+
+	cmd* get_command(std::string cmd_name)
+	{
+		auto it = std::find_if(this->commands.begin(), this->commands.end(), [&](cmd &cmd_element) { return cmd_element.name == cmd_name; });
+		return &(*it);		
+	} // operator overload -> cmd_container("cmd");
+
+	cmd* operator [] (std::string cmd_name)
+	{
+		return this->get_command(cmd_name);
+	}
 };
 
 enum class SYSTEM_MODE 
@@ -21,7 +67,6 @@ enum class SYSTEM_MODE
 	STANDBY,
 	IDLE,
 	RUN
-
 };
 
 enum class OPERATION_MODE
@@ -30,8 +75,3 @@ enum class OPERATION_MODE
 	IDLE,
 	RUN
 };
-
-// Methods
-void execute_cmd(std::string input);
-void init_cli();
-void cli_main();
