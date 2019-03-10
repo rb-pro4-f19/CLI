@@ -10,11 +10,13 @@
 #include <thread>
 #include <algorithm>
 
+#include "uart.h"
 
 //// Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct cmd;
 struct cmd_container;
+
 extern cmd_container commands;
 
 enum class SYSTEM_MODE;

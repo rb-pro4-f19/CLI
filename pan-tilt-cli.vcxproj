@@ -164,9 +164,11 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\system.cpp" />
+    <ClCompile Include="src\uart.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\system.h" />
+    <ClInclude Include="src\uart.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
