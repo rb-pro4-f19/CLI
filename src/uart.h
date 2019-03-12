@@ -1,11 +1,14 @@
 #include <vector>
 
+//// Defines //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define UART_COM_PORT "COM3"
 
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace uart
 {
-	// Public Members
+	// Public Constructs
 
 	enum class UART_MODE
 	{
@@ -22,10 +25,14 @@ namespace uart
 		uint8_t		checksum;
 	};
 
+	// Public Members
+
+	;
+
 	// Public Methods
 
-	void		init();
-	void		connect();
+	//void		init(const char* com_port = UART_COM_PORT);
+	void		connect(const char* com_port = UART_COM_PORT);
 	void		disconnect();
 
 	void		write(uint8_t data[]);

@@ -14,7 +14,7 @@
 
 cmd_container commands =
 {
-	{ "connect",		[](std::string args) { return; } },
+	{ "connect",		[](std::string args) { uart::connect(&args[0]); } },
 	{ "read",			[](std::string args) { return; } },
 	{ "write",			[](std::string args) { return; } },
 	{ "log",			[](std::string args) { return; } },
@@ -31,11 +31,13 @@ cmd_container commands =
 		})},
 	})},
 	{ "get",			[](std::string args) { return; } },
+	{ "cls",			[](std::string args) { init_cli(); } },
 };
 
 // main function
 int main()
 {
+
 	// initialize command line interface
 	init_cli();
 	

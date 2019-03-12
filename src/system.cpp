@@ -59,12 +59,13 @@ void parse_input(std::string input)
 		// otherwise run command with unspecified arguments
 		else
 		{
-			std::cout << "\n";
+			//std::cout << "\n";
 			search_tree->get_command(word)->func(args);
+			if ( word != "cls") { std::cout << "\n\n"; }
 			return;
 		}
 	}
 
 	// catch all exceptions here
-	std::cout << "The command \"" << input << "\" is invalid.\n";
+	std::cout << "The command \"" << input << "\" is invalid.\n\n";
 }
