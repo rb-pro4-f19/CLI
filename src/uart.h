@@ -1,3 +1,4 @@
+#include <string>
 #include <vector>
 
 //// Defines //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -15,6 +16,18 @@ namespace uart
 		DISABLED,
 		MANUAL,
 		LISTENER
+	};
+
+	enum class UART_TYPE
+	{
+		CONNECT,
+		RAW,
+		GET,
+		SET,
+		ACK,
+		RESPONSE,
+		STREAM,
+		MSG
 	};
 
 	struct UART_FRAME
@@ -35,20 +48,7 @@ namespace uart
 	void		connect(const char* com_port = UART_COM_PORT);
 	void		disconnect();
 
-	void		write(uint8_t data[]);
-	void		write_byte(uint8_t byte);
-	
-	uint8_t*	read_all();
-	uint8_t		read_byte();
-	uint8_t*	read_bytes(uint8_t num_of_bytes);
-
-	bool		send(UART_FRAME frame);
+	bool		send(UART_TYPE type, std::vector<uint8_t> &data);
 	bool		request(uint8_t* buffer);
-
-	namespace listener
-	{
-		void	enable();
-		void	disable();
-	}
 
 }

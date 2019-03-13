@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <atomic>
 #include <windows.h>
 
 #include "uart.h"
@@ -23,24 +24,24 @@ namespace uart
 	DWORD	com_errors;
 
 	// Private Methods
-
-	;
+	
+	bool transmit(UART_FRAME frm);
+	bool write_byte(uint8_t byte);
+	bool write_array(std::vector<uint8_t> &data);
 
 	// Sub Namespaces
-
-	namespace buffer
-	{
-		bool	has_data();
-		int		queue();
-		void	flush();
-	}
 
 	namespace listener
 	{
 		int	required_bytes	= 3;
 		void (*callback)()	= nullptr;
+
+		std::atomic<std::vector<uint8_t>> buffer_response;
+		std::atomic<std::vector<uint8_t>> buffer_stream;
+		std::atomic<std::vector<uint8_t>> buffer_msg;
+
 		std::thread	thread;
-		
+
 		void	set_callback();
 		void	enable();
 		void	disable();
@@ -128,12 +129,12 @@ void uart::disconnect()
 	CloseHandle(uart::com_handler);
 }
 
-void uart::write(uint8_t data[])
+void uart::send(UART_FRAME frame)
 {
-	return;
+
 }
 
-void uart::write_byte(uint8_t byte)
+bool uart::write_byte(uint8_t byte)
 {
 	uint8_t tx_bytes[] = { byte };
 	DWORD transmitted_bytes;
@@ -141,14 +142,30 @@ void uart::write_byte(uint8_t byte)
 	if (!uart::connected)
 	{
 		printf("No active connection.");
-		return;
+		return false;
 	}
 
 	if (!WriteFile(uart::com_handler, tx_bytes, 1, &transmitted_bytes, NULL))
 	{
 		printf("Error writing byte.");
 		ClearCommError(uart::com_handler, &uart::com_errors, &uart::com_status);
+		return false;
 	}
+
+	return true;
+}
+
+bool uart::write_array(std::vector<uint8_t> &data)
+{
+
+	bool tx_succes = false;
+
+	for (const auto& byte : data)
+	{
+		tx_succes = uart::write_byte(byte);
+	}
+
+	return tx_succes;
 }
 
 //// ::buffer methods
