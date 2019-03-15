@@ -17,6 +17,13 @@
 namespace sys
 {
 	void connect(std::string com_port);
+	void write(std::string byte);
+
+	namespace cli
+	{
+		void init();
+		void get_input();
+	}
 }
 
 struct cmd;

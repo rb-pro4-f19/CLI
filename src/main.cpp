@@ -16,7 +16,7 @@ cmd_container commands =
 {
 	{ "connect",		[](std::string args) { sys::connect(args); } },
 	{ "read",			[](std::string args) { return; } },
-	{ "write",			[](std::string args) { return; } },
+	{ "write",			[](std::string args) { sys::write(args); } },
 	{ "log",			[](std::string args) { return; } },
 	{ "set",			[](std::string args) { return; }, newcmd{
 		{ "mode",			[](std::string args) { return; }, newcmd{

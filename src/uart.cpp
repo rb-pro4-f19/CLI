@@ -4,6 +4,7 @@
 #include <vector>
 #include <thread>
 #include <atomic>
+#include <functional>
 #include <windows.h>
 
 extern "C"
@@ -124,8 +125,8 @@ void uart::connect(const char* com_port)
 		return;
 	}
 
-	com_parameters.BaudRate		= CBR_9600;
-	com_parameters.ByteSize		= 8;
+	com_parameters.BaudRate		= UART_BAUD;
+	com_parameters.ByteSize		= UART_BYTESIZE;
 	com_parameters.StopBits		= ONESTOPBIT;
 	com_parameters.Parity		= NOPARITY;
 	com_parameters.fDtrControl	= DTR_CONTROL_ENABLE;
@@ -170,15 +171,71 @@ void uart::disconnect()
 
 bool uart::send(UART_FRAME_TYPE type, std::vector<uint8_t>& data)
 {
+	using namespace std::chrono;
+
+	// timing
+	high_resolution_clock				clock;
+	time_point<high_resolution_clock>	time_start;
+
+	// check maximum size
+	if (data.size() > 14)
+	{
+		printf("SIZE ERROR: Size of payload may not exceed 14 bytes.\n");
+		return false;
+	}
+
 	// construct frame
+	UART_FRAME tx_frame = { type, data.size(), data, 0 };
+	UART_FRAME ack_frame = { 0, 0, {}, 0 };
 
 	// generate checksum
+	std::vector<uint8_t> tx_checksum_data = data;
+	tx_checksum_data.insert(tx_checksum_data.begin(), ((tx_frame.type << 5) | tx_frame.size));
 
-	// send data
+	tx_frame.checksum = chksum.gen_8bit(tx_checksum_data.data(), tx_checksum_data.size());
 
-	// wait for acknowledge or timeout (try again?)
+	// setup ack callback
+	std::atomic<bool> tx_ack = false;
+
+	uart::reciever::callback_ack = [&](UART_FRAME frame)
+	{
+		tx_ack = true;
+		ack_frame = frame;
+	};
+
+	// start timer
+	time_start = clock.now();
+
+	// try transmitting data array
+	if (!uart::write_array(data))
+	{
+		printf("TRANSMISSION ERROR: Could not transmit the data array.\n");
+		return false;
+	}
+
+	// wait for acknowledge or timeout
+	while (static_cast<duration<double, std::milli>>(clock.now() - time_start).count() > 500 || tx_ack);
+
+	// validate acknowledge
+	if (!tx_ack)
+	{
+		printf("ACKNOWLEDGE ERROR: Did not recieve an acknowledge before timeout.\n");
+		return false;
+	}
+
+	// create checksum vector
+	std::vector<uint8_t> ack_checksum_data = ack_frame.payload;
+	ack_checksum_data.insert(ack_checksum_data.begin(), ((ack_frame.type << 5) | ack_frame.size));
+
+	// validate the checksum
+	if (!chksum.val_8bit(ack_checksum_data.data(), ack_checksum_data.size(), ack_frame.checksum))
+	{
+		printf("CHECKSUM ERROR: Did not recieve an acknowledge before timeout.\n");
+		return false;
+	}
 
 	// return
+	printf("TRANSMISSION SUCCESS: Recieved ACK with checksum : 0x%X\n", ack_frame.checksum);
 	return true;
 }
 
@@ -189,13 +246,13 @@ bool uart::write_byte(uint8_t byte)
 
 	if (!uart::connected)
 	{
-		printf("No active connection.");
+		printf("No active connection.\n");
 		return false;
 	}
 
 	if (!WriteFile(uart::com_handler, tx_bytes, 1, &transmitted_bytes, NULL))
 	{
-		printf("Error writing byte.");
+		printf("Error writing byte.\n");
 		ClearCommError(uart::com_handler, &uart::com_errors, &uart::com_status);
 		return false;
 	}
@@ -381,7 +438,7 @@ void uart::reciever::worker()
 				}
 
 				// select callback according to frame type
-				void(*callback)(UART_FRAME frame) = nullptr;
+				std::function<void(UART_FRAME frame)> callback = nullptr;
 
 				switch (reciever::frame.type)
 				{

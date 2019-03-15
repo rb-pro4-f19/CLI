@@ -84,6 +84,12 @@ void sys::connect(std::string com_port)
 	(com_port == "") ? uart::connect() : uart::connect(com_port.c_str());
 }
 
+void sys::write(std::string byte)
+{
+	std::vector<uint8_t> tx_data = { (uint8_t)std::stoi(byte) };
+	uart::send(uart::UART_FRAME_TYPE::RAW, tx_data);
+}
+
 void test_func(uart::UART_FRAME frame)
 {
 	printf("Got frame with checksum: %u", frame.checksum);

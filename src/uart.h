@@ -6,6 +6,9 @@
 //// Defines //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define UART_COM_PORT			"COM3"
+#define UART_BAUD				CBR_9600
+#define UART_BYTESIZE			8
+
 #define UART_FRAME_TYPE_BITS	3
 #define UART_FRAME_SIZE_BITS	5
 #define UART_MAX_PAYLOAD_SIZE	256
@@ -60,8 +63,12 @@ namespace uart
 
 	namespace reciever
 	{
-		static void(*callback_ack)(UART_FRAME frame) = nullptr;
+		/*static void(*callback_ack)(UART_FRAME frame) = nullptr;
 		static void(*callback_msg)(UART_FRAME frame) = nullptr;
-		static void(*callback_stm)(UART_FRAME frame) = nullptr;
+		static void(*callback_stm)(UART_FRAME frame) = nullptr;*/
+
+		static std::function<void(UART_FRAME frame)> callback_ack = nullptr;
+		static std::function<void(UART_FRAME frame)> callback_msg = nullptr;
+		static std::function<void(UART_FRAME frame)> callback_stm = nullptr;
 	}
 }
