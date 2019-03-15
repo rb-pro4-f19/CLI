@@ -14,6 +14,11 @@
 
 //// Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+namespace sys
+{
+	void connect(std::string com_port);
+}
+
 struct cmd;
 struct cmd_container;
 
@@ -25,6 +30,8 @@ enum class OPERATION_MODE;
 void parse_input(std::string input);
 void init_cli();
 void cli();
+
+void test_func(uart::UART_FRAME frame);
 
 struct cmd
 {

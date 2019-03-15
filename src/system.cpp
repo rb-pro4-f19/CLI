@@ -1,5 +1,8 @@
 #include "system.h"
 
+// 1.0.0 -> created project, cmd parser
+// 1.0.1 -> UART + chksum, setup sys namespace
+
 //// Constants ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //// Definitions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -7,7 +10,7 @@
 void init_cli()
 {
 	system("cls");
-	std::cout << "Pan-Tilt System 1.0.0\n\n";
+	std::cout << "Pan-Tilt System 1.0.1\n\n";
 }
 
 void cli()
@@ -68,4 +71,20 @@ void parse_input(std::string input)
 
 	// catch all exceptions here
 	std::cout << "The command \"" << input << "\" is invalid.\n\n";
+}
+
+void sys::connect(std::string com_port)
+{
+	// configure callbacks
+	uart::reciever::callback_ack = nullptr;
+	uart::reciever::callback_msg = nullptr;
+	uart::reciever::callback_stm = nullptr;
+
+	// connect UART
+	(com_port == "") ? uart::connect() : uart::connect(com_port.c_str());
+}
+
+void test_func(uart::UART_FRAME frame)
+{
+	printf("Got frame with checksum: %u", frame.checksum);
 }
