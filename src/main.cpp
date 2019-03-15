@@ -14,15 +14,10 @@
 
 cmd_container commands =
 {
-	{ "connect",		[](std::string args) { uart::connect(&args[0]); } },
+	{ "connect",		[](std::string args) { sys::connect(args); } },
 	{ "read",			[](std::string args) { return; } },
 	{ "write",			[](std::string args) { return; } },
 	{ "log",			[](std::string args) { return; } },
-	{ "mode",			[](std::string args) { return; }, new cmd_container({
-		{ "standby",		[](std::string args) { return; } },
-		{ "manual",			[](std::string args) { return; } },
-		{ "auto",			[](std::string args) { return; } },
-	})},
 	{ "set",			[](std::string args) { return; }, newcmd{
 		{ "mode",			[](std::string args) { return; }, newcmd{
 			{ "standby",		[](std::string args) { return; } },
@@ -32,6 +27,7 @@ cmd_container commands =
 	})},
 	{ "get",			[](std::string args) { return; } },
 	{ "cls",			[](std::string args) { init_cli(); } },
+	{ "exit",			[](std::string args) { exit(0); } },
 };
 
 // main function
