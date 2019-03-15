@@ -5,9 +5,10 @@
 
 //// Defines //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define UART_COM_PORT			"COM3"
+#define UART_COM_PORT			"COM4"
 #define UART_BAUD				CBR_9600
 #define UART_BYTESIZE			8
+#define UART_ACK_TIMEOUT		3000
 
 #define UART_FRAME_TYPE_BITS	3
 #define UART_FRAME_SIZE_BITS	5

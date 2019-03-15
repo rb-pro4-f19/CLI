@@ -187,34 +187,36 @@ bool uart::send(UART_FRAME_TYPE type, std::vector<uint8_t>& data)
 	// construct frame
 	UART_FRAME tx_frame = { type, data.size(), data, 0 };
 	UART_FRAME ack_frame = { 0, 0, {}, 0 };
+	std::vector<uint8_t> tx_data = data;
 
 	// generate checksum
-	std::vector<uint8_t> tx_checksum_data = data;
-	tx_checksum_data.insert(tx_checksum_data.begin(), ((tx_frame.type << 5) | tx_frame.size));
+	tx_data.insert(tx_data.begin(), ((tx_frame.type << 5) | tx_frame.size));
+	tx_frame.checksum = chksum.gen_8bit(tx_data.data(), tx_data.size());
 
-	tx_frame.checksum = chksum.gen_8bit(tx_checksum_data.data(), tx_checksum_data.size());
+	// append cheksum
+	tx_data.push_back(tx_frame.checksum);
 
 	// setup ack callback
 	std::atomic<bool> tx_ack = false;
 
 	uart::reciever::callback_ack = [&](UART_FRAME frame)
 	{
-		tx_ack = true;
 		ack_frame = frame;
+		tx_ack = true;
 	};
 
 	// start timer
 	time_start = clock.now();
 
-	// try transmitting data array
-	if (!uart::write_array(data))
+	// try transmitting tx_data array
+	if (!uart::write_array(tx_data))
 	{
 		printf("TRANSMISSION ERROR: Could not transmit the data array.\n");
 		return false;
 	}
 
 	// wait for acknowledge or timeout
-	while (static_cast<duration<double, std::milli>>(clock.now() - time_start).count() > 500 || tx_ack);
+	while (static_cast<duration<double, std::milli>>(clock.now() - time_start).count() < UART_ACK_TIMEOUT && !tx_ack);
 
 	// validate acknowledge
 	if (!tx_ack)
@@ -262,7 +264,6 @@ bool uart::write_byte(uint8_t byte)
 
 bool uart::write_array(std::vector<uint8_t>& data)
 {
-
 	bool tx_succes = false;
 
 	for (const auto& byte : data)
@@ -300,10 +301,10 @@ uint8_t uart::parse_byte(uint8_t byte, UART_FRAME_FIELD field)
 	switch (field)
 	{
 		case TYPE:
-			return (byte & 0b1110'0000);
+			return ((byte & 0b1110'0000) >> 5);
 
 		case SIZE:
-			return (byte & 0b0001'1111);
+			return ((byte & 0b0001'1111) >> 0);
 
 		default:
 			return byte;
@@ -341,9 +342,6 @@ void uart::reciever::worker()
 {
 	while (reciever::enabled)
 	{
-
-		printf("\n");
-
 		switch (reciever::state)
 		{
 			case IDLE:
