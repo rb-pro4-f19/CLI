@@ -1,9 +1,14 @@
+#pragma once
+
 #include <string>
 #include <vector>
 
 //// Defines //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define UART_COM_PORT "COM3"
+#define UART_COM_PORT			"COM3"
+#define UART_FRAME_TYPE_BITS	3
+#define UART_FRAME_SIZE_BITS	5
+#define UART_MAX_PAYLOAD_SIZE	256
 
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -11,14 +16,24 @@ namespace uart
 {
 	// Public Constructs
 
-	enum class UART_MODE
+	struct UART_FRAME
 	{
-		DISABLED,
-		MANUAL,
-		LISTENER
+		uint8_t		type : 3; /// should match parse_byte();
+		uint8_t		size : 5; /// ^
+		std::vector
+		<uint8_t>	payload;
+		uint8_t		checksum;
 	};
 
-	enum class UART_TYPE
+	enum UART_FRAME_FIELD
+	{
+		TYPE,
+		SIZE,
+		PAYLOAD,
+		CHECKUM
+	};
+
+	enum UART_FRAME_TYPE
 	{
 		CONNECT,
 		RAW,
@@ -28,14 +43,6 @@ namespace uart
 		RESPONSE,
 		STREAM,
 		MSG
-	};
-
-	struct UART_FRAME
-	{
-		uint8_t		type : 4;
-		uint8_t		size : 4;
-		uint8_t*	payload;
-		uint8_t		checksum;
 	};
 
 	// Public Members
@@ -48,7 +55,13 @@ namespace uart
 	void		connect(const char* com_port = UART_COM_PORT);
 	void		disconnect();
 
-	bool		send(UART_TYPE type, std::vector<uint8_t> &data);
-	bool		request(uint8_t* buffer);
+	bool		send(UART_FRAME_TYPE type, std::vector<uint8_t>& data);
+	bool		request(uint8_t* buffer);	
 
+	namespace reciever
+	{
+		static void(*callback_ack)(UART_FRAME frame) = nullptr;
+		static void(*callback_msg)(UART_FRAME frame) = nullptr;
+		static void(*callback_stm)(UART_FRAME frame) = nullptr;
+	}
 }
