@@ -80,11 +80,11 @@ static uint8_t CHECKSUM_gen_8bit(uint8_t* data_array, uint8_t size)
 	uint8_t checksum = 0;
 
 	// algorithm starting from MSB
-	for (int i = size; i >= 0; --i)
+	for (int i = 0; i < size; i++)
 	{
 		checksum = _CHECKSUM_ror_byte(checksum);
-		checksum = checksum + data_array[i];
-		checksum = checksum & 0xFF;
+		checksum = (uint8_t)checksum + data_array[i];
+		checksum = (uint8_t)checksum & 0xFF;
 	}
 
 	return checksum;
