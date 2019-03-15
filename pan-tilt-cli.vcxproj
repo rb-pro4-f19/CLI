@@ -162,11 +162,13 @@
     <None Include="doc\CHANGELOG.md" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\chksum.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\system.cpp" />
     <ClCompile Include="src\uart.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\chksum.h" />
     <ClInclude Include="src\system.h" />
     <ClInclude Include="src\uart.h" />
   </ItemGroup>
