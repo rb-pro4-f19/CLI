@@ -1,18 +1,5 @@
-#include <iostream>
-#include <string>
-#include <array>
-#include <vector>
-#include <thread>
-#include <atomic>
-#include <functional>
-#include <windows.h>
-
-extern "C"
-{
-#include "chksum.h"
-}
-
 #include "uart.h"
+
 //// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace uart
@@ -41,7 +28,7 @@ namespace uart
 	namespace buffer
 	{
 		bool	has_data();
-		int		queue();
+		int		queue_size();
 		void	flush();
 	}
 
@@ -66,6 +53,10 @@ namespace uart
 		std::string		error_msg = "Unspecfified error.";
 		std::thread*	thread;
 
+		std::function<void(UART_FRAME frame)> callback_ack = nullptr;
+		std::function<void(UART_FRAME frame)> callback_msg = nullptr;
+		std::function<void(UART_FRAME frame)> callback_stm = nullptr;
+
 		std::array
 		<uint8_t, UART_MAX_PAYLOAD_SIZE> frame_data;
 
@@ -83,7 +74,7 @@ void uart::connect(const char* com_port)
 {
 	if (uart::connected)
 	{
-		printf("Connection is already established.");
+		printf("Connection is already established.\n");
 		return;
 	}
 
@@ -106,11 +97,11 @@ void uart::connect(const char* com_port)
 	{
 		if (GetLastError() == ERROR_FILE_NOT_FOUND)
 		{
-			printf("Handle could not be attached; the specified COM port is unavailable.");
+			printf("Handle could not be attached; the specified COM port is unavailable.\n");
 		}
 		else
 		{
-			printf("Connection unsuccesful.");
+			printf("Connection unsuccesful.\n");
 		}
 
 		return;
@@ -121,7 +112,7 @@ void uart::connect(const char* com_port)
 
 	if (!GetCommState(uart::com_handler, &com_parameters))
 	{
-		printf("Connection failed; failed to retrieve current serial parameters.");
+		printf("Connection failed; failed to retrieve current serial parameters.\n");
 		return;
 	}
 
@@ -134,7 +125,7 @@ void uart::connect(const char* com_port)
 	// verify parameters
 	if (!SetCommState(uart::com_handler, &com_parameters))
 	{
-		printf("Connection failed; could not set serial port parameters.");
+		printf("Connection failed; could not set serial port parameters.\n");
 		return;
 	}
 
@@ -150,7 +141,7 @@ void uart::connect(const char* com_port)
 	uart::reciever::thread = new std::thread(&reciever::worker);
 
 	// log success
-	printf("Connection established on %s.", uart::com_port);
+	printf("Connection established on %s.\n", uart::com_port);
 }
 
 void uart::disconnect()
@@ -196,6 +187,9 @@ bool uart::send(UART_FRAME_TYPE type, std::vector<uint8_t>& data)
 	// append cheksum
 	tx_data.push_back(tx_frame.checksum);
 
+	printf("SENDING FRAME: ");
+	uart::print_frame(tx_frame);
+
 	// setup ack callback
 	std::atomic<bool> tx_ack = false;
 
@@ -222,6 +216,7 @@ bool uart::send(UART_FRAME_TYPE type, std::vector<uint8_t>& data)
 	if (!tx_ack)
 	{
 		printf("ACKNOWLEDGE ERROR: Did not recieve an acknowledge before timeout.\n");
+		uart::reciever::callback_ack = nullptr;
 		return false;
 	}
 
@@ -276,10 +271,6 @@ bool uart::write_array(std::vector<uint8_t>& data)
 
 bool uart::read_byte(uint8_t& destination_byte)
 {
-	
-	//destination_byte = 0b1100'1010;
-	//return true; // TEST ONLY
-
 	// read buffer	
 	DWORD	num_bytes_read;
 	uint8_t buffer[1];
@@ -311,6 +302,22 @@ uint8_t uart::parse_byte(uint8_t byte, UART_FRAME_FIELD field)
 	}
 }
 
+void uart::print_frame(UART_FRAME& frame)
+{
+	// print header
+	printf("[ %u : %u ]", frame.type, frame.size);
+
+	// print payload
+	for (const auto& p : frame.payload)
+		printf("[ 0x%X ]", p);
+
+	// print checksum
+	printf("[ %u ]", frame.checksum);
+
+	// new line
+	std::cout << std::endl;
+}
+
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// ::buffer methods
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -323,7 +330,7 @@ bool uart::buffer::has_data()
 	return (com_status.cbInQue != 0);
 }
 
-int uart::buffer::queue()
+int uart::buffer::queue_size()
 {
 	return 0;
 }
@@ -331,7 +338,7 @@ int uart::buffer::queue()
 void uart::buffer::flush()
 {
 	PurgeComm(uart::com_handler, PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR);
-	printf("Buffer was flushed.");
+	printf("Buffer was flushed.\n");
 }
 
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -467,9 +474,10 @@ void uart::reciever::worker()
 
 				// perform callback on detached thread
 				std::thread callback_thread(callback, reciever::frame);
-				callback_thread.detach();
+				callback_thread.detach();				
 
 				// reset reciever
+				reciever::callback_ack = nullptr;
 				reciever::state = LISTEN;
 				break;
 			}

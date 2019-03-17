@@ -1,7 +1,18 @@
 #pragma once
 
+#include <iostream>
 #include <string>
+#include <array>
 #include <vector>
+#include <thread>
+#include <atomic>
+#include <functional>
+#include <windows.h>
+
+extern "C"
+{
+#include "chksum.h"
+}
 
 //// Defines //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -39,14 +50,14 @@ namespace uart
 
 	enum UART_FRAME_TYPE
 	{
-		CONNECT,
-		RAW,
-		GET,
-		SET,
-		ACK,
-		RESPONSE,
-		STREAM,
-		MSG
+		CONNECT		= 0x00,
+		RAW			= 0x01,
+		GET			= 0x02,
+		SET			= 0x03,
+		ACK			= 0x04,
+		RESPONSE	= 0x05,
+		STREAM		= 0x06,
+		MSG			= 0x07
 	};
 
 	// Public Members
@@ -55,21 +66,18 @@ namespace uart
 
 	// Public Methods
 
-	//void		init(const char* com_port = UART_COM_PORT);
 	void		connect(const char* com_port = UART_COM_PORT);
 	void		disconnect();
 
 	bool		send(UART_FRAME_TYPE type, std::vector<uint8_t>& data);
-	bool		request(uint8_t* buffer);	
+	bool		request(uint8_t* buffer);
+
+	void		print_frame(UART_FRAME& frame);
 
 	namespace reciever
 	{
-		/*static void(*callback_ack)(UART_FRAME frame) = nullptr;
-		static void(*callback_msg)(UART_FRAME frame) = nullptr;
-		static void(*callback_stm)(UART_FRAME frame) = nullptr;*/
-
-		static std::function<void(UART_FRAME frame)> callback_ack = nullptr;
-		static std::function<void(UART_FRAME frame)> callback_msg = nullptr;
-		static std::function<void(UART_FRAME frame)> callback_stm = nullptr;
+		extern std::function<void(UART_FRAME frame)> callback_ack;
+		extern std::function<void(UART_FRAME frame)> callback_msg;
+		extern std::function<void(UART_FRAME frame)> callback_stm;
 	}
 }
