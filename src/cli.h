@@ -62,8 +62,8 @@ namespace cli
 	void init(cli::cmd_container commands);
 	void get_input();
 
-	void msgbox(std::string msg, std::string title);
+	void msgbox(const std::string& msg, const std::string& title);
 
-	void log_insert(std::string);
-	void log_reset(std::string);
+	void log_insert(const std::string& line);
+	void log_reset(const std::string&);
 }

@@ -4,7 +4,7 @@ namespace cli
 {
 	cmd_container commands;
 
-	void parse_input(std::string input);
+	void parse_input(const std::string& input);
 }
 
 void cli::init(cli::cmd_container commands)
@@ -35,7 +35,7 @@ void cli::get_input()
 	cli::parse_input(input);
 }
 
-void cli::parse_input(std::string input)
+void cli::parse_input(const std::string& input)
 {
 	// split input delimited by spaces into vector of strings
 	std::istringstream input_iss(input);
@@ -75,7 +75,7 @@ void cli::parse_input(std::string input)
 	std::cout << "The command \"" << input << "\" is invalid.\n\n";
 }
 
-void cli::log_insert(std::string line)
+void cli::log_insert(const std::string& line)
 {
 	// http://www.inwap.com/pdp10/ansicode.txt
 	
@@ -97,12 +97,11 @@ void cli::log_insert(std::string line)
 	// restore horizontal cursor position
 	std::cout << "\033[u";
 		
-	// move down <X> number of lines
+	// move down <X> number of lines (\033[<X>B)
 	std::cout << "\033[" << num_of_lines + 1 << "B";
-	
 }
 
-void cli::msgbox(std::string msg, std::string title = "Information")
+void cli::msgbox(const std::string& msg, const std::string& title = "Information")
 {
 	std::thread t([&]() {
 		MessageBoxA(NULL, msg.c_str(), title.c_str(), MB_OK);
@@ -111,7 +110,7 @@ void cli::msgbox(std::string msg, std::string title = "Information")
 	t.detach();
 }
 
-void cli::log_reset(std::string line = "")
+void cli::log_reset(const std::string& line = "")
 {
 	static std::string default_line = line;
 

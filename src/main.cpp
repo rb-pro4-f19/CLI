@@ -5,7 +5,7 @@
 // as an entry point and overview of the system.
 
 // Changelog can be found here:
-// <link>
+// https://github.com/rb-pro4-f19/CLI/blob/master/CHANGELOG.md
 
 // main function
 int main()
@@ -27,6 +27,15 @@ int main()
 		{ "cls",			[](std::string args) { return; } },
 		{ "exit",			[](std::string args) { exit(0); } },
 	});
+
+	// test of cli::log_insert();
+	/*std::thread t([](){
+		while (true)
+		{
+			for (int i = 0; i < 1000000000; i++);
+			cli::log_insert("This is a test line.");
+		}
+	});*/
 
 	// log system information
 	printf("Pan-Tilt System %s\n\n", SYSTEM_VERSION);
