@@ -110,10 +110,10 @@ void cli::msgbox(const std::string& msg, const std::string& title = "Information
 	t.detach();
 }
 
-void cli::log_reset(const std::string& line = "")
+void cli::log_reset(const std::string& line)
 {
 	static std::string default_line = line;
 
 	system("cls");
-	std::cout << default_line << std::endl;
+	std::cout << default_line << "\n\n";
 }

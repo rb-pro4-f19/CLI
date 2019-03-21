@@ -65,5 +65,5 @@ namespace cli
 	void msgbox(const std::string& msg, const std::string& title);
 
 	void log_insert(const std::string& line);
-	void log_reset(const std::string&);
+	void log_reset(const std::string& line = "");
 }

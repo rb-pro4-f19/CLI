@@ -24,7 +24,7 @@ int main()
 			})},
 		})},
 		{ "get",			[](std::string args) { return; } },
-		{ "cls",			[](std::string args) { return; } },
+		{ "cls",			[](std::string args) { cli::log_reset(); } },
 		{ "exit",			[](std::string args) { exit(0); } },
 	});
 
@@ -38,14 +38,14 @@ int main()
 	});*/
 
 	// log system information
-	printf("Pan-Tilt System %s\n\n", SYSTEM_VERSION);
+	cli::log_reset("Pan-Tilt System " + std::string(SYSTEM_VERSION));
 
 	// main loop
 	while (true)
 	{
 		cli::get_input();
 	}
-	
+
 	// exit
 	return 0;
 }
