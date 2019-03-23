@@ -13,29 +13,25 @@ int main()
 	// initialize CLI
 	cli::init(
 	{
-		{ "connect",		[](std::string args) { sys::connect(args); } },
+		{ "connect",		&sys::connect },
 		{ "echo",			[](std::string args) { sys::echo(); } },
 		{ "write",			[](std::string args) { sys::write(args); } },
-		{ "set",			[](std::string args) { return; }, newcmd{
-			{ "mode",			[](std::string args) { return; }, newcmd{
+		{ "cls",			[](std::string args) { cli::log_reset(); } },
+		{ "exit",			[](std::string args) { exit(0); } },
+
+		{ "set",			[](std::string args) { return; }, subcmd{
+			{ "mode",			[](std::string args) { return; }, subcmd{
 				{ "standby",		[](std::string args) { return; } },
 				{ "manual",			[](std::string args) { return; } },
 				{ "auto",			[](std::string args) { return; } }
 			})},
+			{ "pwm",			[](std::string args) { sys::set_pwm(args); }}
 		})},
-		{ "get",			[](std::string args) { return; } },
-		{ "cls",			[](std::string args) { cli::log_reset(); } },
-		{ "exit",			[](std::string args) { exit(0); } },
-	});
 
-	// test of cli::log_insert();
-	/*std::thread t([](){
-		while (true)
-		{
-			for (int i = 0; i < 1000000000; i++);
-			cli::log_insert("This is a test line.");
-		}
-	});*/
+		{ "get",			[](std::string args) { return; }, subcmd{
+			{ "enc",			[](std::string args) { sys::get_enc(args); }}
+		})},
+	});
 
 	// log system information
 	cli::log_reset("Pan-Tilt System " + std::string(SYSTEM_VERSION));
