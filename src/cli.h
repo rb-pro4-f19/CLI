@@ -10,7 +10,8 @@
 
 #include <windows.h>
 
-#define newcmd new cli::cmd_container(
+#define subcmd			new cli::cmd_container(
+#define cmd_func(x)		[](std::string args) { x }
 
 namespace cli
 {
