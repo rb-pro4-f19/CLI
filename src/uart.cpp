@@ -50,7 +50,7 @@ namespace uart
 		UART_RX_STATE	state = IDLE;
 		UART_FRAME		frame;
 		uint16_t		num_rx_bytes = 0;
-		std::string		error_msg = "Unspecfified error.";
+		std::string		error_msg = "Unspecfified error.\n";
 		std::thread*	thread;
 
 		std::function<void(UART_FRAME frame)> callback_ack = nullptr;
@@ -157,7 +157,7 @@ void uart::disconnect()
 	delete uart::reciever::thread;
 
 	// log success
-	printf("Connection closed.");
+	printf("Connection closed.\n");
 }
 
 bool uart::send(UART_FRAME_TYPE type, std::vector<uint8_t>& data)
@@ -488,6 +488,9 @@ void uart::reciever::worker()
 				// log error
 				printf(reciever::error_msg.c_str());
 				printf("\n");
+
+				// sleep for a while
+				;
 				
 				// reset
 				buffer::flush();
