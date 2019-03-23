@@ -11,7 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Todo
 - Centralized `cli::log()` method with log level, colors etc.
-- Improved error handling and messages
+- Improved error handling and messages.
+- `constexpr` for expressions, common defualt file.
+- Delay in UART error handler.
+- `.split_args()` method.
+
+#### Added
+
+- `.set_pwm()` + command entry "set pwm".
+- `.get_enc()` + command entry "get enc".
+- `cmd_func(x)` define for shorter lambdas; currently unused.
+
+#### Changed
+
+- Changed .msg() to callback by value.
+- Beautified CMD table; rename define `newcmd` to `subcmd`.
 
 <!-- ----------------------------------------------------------------------------------------- -->
 
