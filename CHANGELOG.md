@@ -10,22 +10,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cli::log_insert()` breaks when input line not in view / scroll overflow.
 
 #### Todo
+- Make `.write()` write an array of bytes
 - Centralized `cli::log()` method with log level, colors etc.
-- Improved error handling and messages.
 - `constexpr` for expressions, common defualt file.
-- Delay in UART error handler.
-- `.split_args()` method.
+- Improved error handling and messages.
 
 #### Added
 
 - `.set_pwm()` + command entry "set pwm".
 - `.get_enc()` + command entry "get enc".
 - `cmd_func(x)` define for shorter lambdas; currently unused.
+- 500ms delay in UART `EXCEPTION` handler state.
+- `.split_str()` method.
 
 #### Changed
 
-- Changed .msg() to callback by value.
+- Changed `.callback_msg()` thread lambda clause to `by value`.
+- Changed `.msgbox()` to take arguments by-value.
+- Changed `.msgbox()` thread lambda clause to `by value`.
 - Beautified CMD table; rename define `newcmd` to `subcmd`.
+
+
+#### Fixed
+- Messages from CLI occasionally showed gibberish.
 
 <!-- ----------------------------------------------------------------------------------------- -->
 
