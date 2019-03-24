@@ -23,14 +23,19 @@ int main()
 			{ "mode",			[](std::string args) { return; }, subcmd{
 				{ "standby",		[](std::string args) { return; } },
 				{ "manual",			[](std::string args) { return; } },
-				{ "auto",			[](std::string args) { return; } }
+				{ "auto",			[](std::string args) { return; } },
+				/// ...
 			})},
-			{ "pwm",			[](std::string args) { sys::set_pwm(args); }}
+			{ "pwm",			[](std::string args) { sys::set_pwm(args); }},
+			/// ...
 		})},
 
 		{ "get",			[](std::string args) { return; }, subcmd{
-			{ "enc",			[](std::string args) { sys::get_enc(args); }}
+			{ "enc",			[](std::string args) { sys::get_enc(args); }},
+			/// ...
 		})},
+
+		/// ...
 	});
 
 	// log system information
