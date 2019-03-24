@@ -17,7 +17,8 @@ void sys::connect(std::string com_port)
 	// MSG callback (by-value)
 	uart::reciever::callback_msg = [=](uart::UART_FRAME frame)
 	{
-		cli::msgbox(std::string(frame.payload.begin(), frame.payload.end()), "Message from MCU");
+		auto msg_str = std::string(frame.payload.begin(), frame.payload.end());
+		cli::msgbox(msg_str, "Message from MCU");
 		//cli::log_insert("MESSAGE: " + std::string(frame.payload.begin(), frame.payload.end()));
 	};
 
@@ -46,41 +47,41 @@ void sys::echo()
 	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
 }
 
-void sys::set_pwm(std::string& inpit_args)
+void sys::set_pwm(std::string& args)
 {
 	// split input delimited by spaces into vector of strings
-	std::istringstream input_iss(inpit_args);
-	std::string args = inpit_args;
+	auto args_vec = cli::split_str(args);
 
-	std::vector<std::string> input_split(std::istream_iterator<std::string>{input_iss}, std::istream_iterator<std::string>());
+	// check that correct num of parameters was passed
+	if (!args_vec.size() == 2) { return; }
 
-	if (!input_split.size() == 2)
-	{
-		return;
-	}
+	// construct variables to be correctly parsed by MCU & FPGA
+	// MOT0 = 0x01 & MOT1 = 0x02
+	// e.g. set pwm 1 200 = set motor MOT1 (0x02) to pwm_val 200
+	uint8_t motor	= std::stoi(args_vec[0]) + 1;
+	uint8_t pwm_val	= std::stoi(args_vec[1]);
+	uint8_t uart_id	= 0x01;
 
-	uint8_t motor = std::stoi(input_split[0]);
-	uint8_t value = std::stoi(input_split[1]);
-
-	std::vector<uint8_t> tx_data = { 0x01, motor, value };
+	// construct and send frame
+	std::vector<uint8_t> tx_data = { uart_id, motor, pwm_val };
 	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
 }
 
-void sys::get_enc(std::string& inpit_args)
+void sys::get_enc(std::string& args)
 {
 	// split input delimited by spaces into vector of strings
-	std::istringstream input_iss(inpit_args);
-	std::string args = inpit_args;
+	auto args_vec = cli::split_str(args);
 
-	std::vector<std::string> input_split(std::istream_iterator<std::string>{input_iss}, std::istream_iterator<std::string>());
+	// check that correct num of parameters was passed
+	if (!args_vec.size() == 1) { return; }
 
-	if (!input_split.size() == 1)
-	{
-		return;
-	}
+	// construct variables to be correctly parsed by MCU & FPGA
+	// ENC0 = 0x03 & ENC1 = 0x04
+	// e.g. get enc 0 = read encoder ENC0 (0x03)
+	uint8_t encoder	= std::stoi(args_vec[0]) + 3;
+	uint8_t uart_id = 0x01;
 
-	uint8_t enc = std::stoi(input_split[0]);
-
-	std::vector<uint8_t> tx_data = { 0x01, enc };
+	// construct and send frame
+	std::vector<uint8_t> tx_data = { uart_id, encoder };
 	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
 }
