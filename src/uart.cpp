@@ -490,7 +490,7 @@ void uart::reciever::worker()
 				printf("\n");
 
 				// sleep for a while
-				;
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				
 				// reset
 				buffer::flush();
