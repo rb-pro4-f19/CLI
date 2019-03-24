@@ -4,7 +4,7 @@ namespace cli
 {
 	cmd_container commands;
 
-	void parse_input(const std::string& input);
+	void parse_input(std::string& input);
 }
 
 void cli::init(cli::cmd_container commands)
@@ -35,25 +35,29 @@ void cli::get_input()
 	cli::parse_input(input);
 }
 
-void cli::parse_input(const std::string& input)
+std::vector<std::string> cli::split_str(std::string str)
+{
+	std::istringstream input_iss(str);
+	return std::vector<std::string>(std::istream_iterator<std::string>{input_iss}, std::istream_iterator<std::string>());
+}
+
+void cli::parse_input(std::string& input)
 {
 	// split input delimited by spaces into vector of strings
-	std::istringstream input_iss(input);
-	std::string args = input;
-
-	std::vector<std::string> input_split(std::istream_iterator<std::string>{input_iss}, std::istream_iterator<std::string>());
-
+	auto args_vec = cli::split_str(input);
+	
+	// start searching at root of command tree
 	auto search_tree = &cli::commands;
 
 	// iterate words of command string
-	for (const auto& word : input_split)
+	for (const auto& word : args_vec)
 	{
 		// check if command exists
 		if (!search_tree->has_command(word))
 			break;
 
 		// update remaining args
-		args.erase(args.find(word), word.length() + 1);
+		input.erase(input.find(word), word.length() + 1);
 
 		// check if command takes specified arguments
 		if (search_tree->get_command(word)->has_children())
@@ -65,7 +69,7 @@ void cli::parse_input(const std::string& input)
 		else
 		{
 			//std::cout << "\n";
-			search_tree->get_command(word)->func(args);
+			search_tree->get_command(word)->func(input);
 			if (word != "cls") { std::cout << "\n"; }
 			return;
 		}
@@ -73,6 +77,14 @@ void cli::parse_input(const std::string& input)
 
 	// catch all exceptions here
 	std::cout << "The command \"" << input << "\" is invalid.\n\n";
+}
+
+void cli::log_reset(const std::string& line)
+{
+	static std::string default_line = line;
+
+	system("cls");
+	std::cout << default_line << "\n\n";
 }
 
 void cli::log_insert(const std::string& line)
@@ -101,19 +113,11 @@ void cli::log_insert(const std::string& line)
 	std::cout << "\033[" << num_of_lines + 1 << "B";
 }
 
-void cli::msgbox(const std::string& msg, const std::string& title = "Information")
+void cli::msgbox(const std::string msg, const std::string title = "Information")
 {
-	std::thread t([&]() {
+	std::thread t([=]() {
 		MessageBoxA(NULL, msg.c_str(), title.c_str(), MB_OK);
 	});
 
 	t.detach();
-}
-
-void cli::log_reset(const std::string& line)
-{
-	static std::string default_line = line;
-
-	system("cls");
-	std::cout << default_line << "\n\n";
 }

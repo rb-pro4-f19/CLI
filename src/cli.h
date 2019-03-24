@@ -13,6 +13,8 @@
 #define subcmd			new cli::cmd_container(
 #define cmd_func(x)		[](std::string args) { x }
 
+#define strvec			std::vector<std::string>
+
 namespace cli
 {
 
@@ -63,8 +65,10 @@ namespace cli
 	void init(cli::cmd_container commands);
 	void get_input();
 
-	void msgbox(const std::string& msg, const std::string& title);
-
-	void log_insert(const std::string& line);
 	void log_reset(const std::string& line = "");
+	void log_insert(const std::string& line);
+
+	void msgbox(const std::string msg, const std::string title);
+
+	std::vector<std::string> split_str(std::string args);
 }
