@@ -10,17 +10,34 @@
 
 #include <windows.h>
 
+//// Defines //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define subcmd			new cli::cmd_container(
 #define cmd_func(x)		[](std::string args) { x }
 
-#define strvec			std::vector<std::string>
+//// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace cli
 {
+	// public constructs
 
 	struct cmd;
 	struct cmd_container;
 
+	// public methods
+
+	void init(cli::cmd_container commands);
+	void get_input();
+
+	void log(const std::string& line);
+	void log_reset(const std::string& line = "");
+	void log_insert(const std::string& line);
+
+	void msgbox(const std::string msg, const std::string title);
+
+	std::vector<std::string> split_str(std::string args);
+
+	// command struct
 	struct cmd
 	{
 		std::string name;
@@ -31,6 +48,7 @@ namespace cli
 		bool has_children() { return this->child_cmds != nullptr; }
 	};
 
+	// container for commands + methods
 	struct cmd_container
 	{
 		cmd_container() {};
@@ -54,7 +72,7 @@ namespace cli
 		{
 			auto it = std::find_if(this->commands.begin(), this->commands.end(), [&](cmd &cmd_element) { return cmd_element.name == cmd_name; });
 			return &(*it);
-		} // operator overload -> cmd_container("cmd");
+		}
 
 		cmd* operator [] (std::string cmd_name)
 		{
@@ -62,13 +80,5 @@ namespace cli
 		}
 	};
 
-	void init(cli::cmd_container commands);
-	void get_input();
-
-	void log_reset(const std::string& line = "");
-	void log_insert(const std::string& line);
-
-	void msgbox(const std::string msg, const std::string title);
-
-	std::vector<std::string> split_str(std::string args);
+	
 }

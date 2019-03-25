@@ -1,19 +1,21 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
+### [Unreleased]
 
 #### Known Issues
 - `cli::log_insert()` breaks when input line not in view / scroll overflow.
 
 #### Todo
-- Make `.write()` write an array of bytes
+- `.write_array()` method.
+- `.write_spi()` method.
 - Centralized `cli::log()` method with log level, colors etc.
 - `constexpr` for expressions, common defualt file.
 - Improved error handling and messages.
+
+<!-- ----------------------------------------------------------------------------------------- -->
+
+### [1.4.0] - 2019-03-25
 
 #### Added
 
@@ -22,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cmd_func(x)` define for shorter lambdas; currently unused.
 - 500ms delay in UART `EXCEPTION` handler state.
 - `.split_str()` method.
+- `.write_array()` prototype and placeholder + CMD table entry.
+- `.write_spi()` prototype and placeholder + CMD table entry.
 
 #### Changed
 
@@ -29,14 +33,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed `.msgbox()` to take arguments by-value.
 - Changed `.msgbox()` thread lambda clause to `by value`.
 - Beautified CMD table; rename define `newcmd` to `subcmd`.
-
+- Update changelog layout to match that of `MCU/docs`.
+- Cleaned up layout.
+- Changed `.write()` to `.write_byte()` + updated CMD table.
 
 #### Fixed
 - Messages from CLI occasionally showed gibberish.
 
+---
+
 <!-- ----------------------------------------------------------------------------------------- -->
 
-## [1.3.0] - 2019-03-17
+### [1.3.0] - 2019-03-17
 
 #### Added
 - `cli::msgbox()` for dialog boxes.
@@ -51,9 +59,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `uart::reciever`'s callbacks were `static`; moved definition into `.c` and updated to `extern` in `.h`.
 - Callback lambda from `uart::send()` could be called too late, trying to access out memory; now reset to `nullptr` every time.
 
+---
+
 <!-- ----------------------------------------------------------------------------------------- -->
 
-## [1.2.0] - 2019-03-15
+### [1.2.0] - 2019-03-15
 
 #### Changed
 - Made CLI a static class/namespace (`cli.h`).
@@ -63,17 +73,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remaining args had extra space (" COM3") in `cli::parse_input()`.
 - 8-bit checksum generator included checksum field in iterations.
 
+---
+
 <!-- ----------------------------------------------------------------------------------------- -->
 
-## [1.1.0] - 2019-03-14
+### [1.1.0] - 2019-03-14
 
 #### Added
 - UART static class/namespace (`uart.h`).
 - Include `chksum.h` from embedded C.
 
+---
+
 <!-- ----------------------------------------------------------------------------------------- -->
 
-## [1.0.0] - 2017-03-05
+### [1.0.0] - 2017-03-05
 
 #### Added
 - Created project.

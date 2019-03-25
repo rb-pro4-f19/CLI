@@ -10,16 +10,23 @@
 // main function
 int main()
 {
-	// initialize CLI
+	// initialize CLI command table
 	cli::init(
 	{
-		{ "connect",		&sys::connect },
-		{ "echo",			[](std::string args) { sys::echo(); } },
-		{ "write",			[](std::string args) { sys::write(args); } },
+		{ "connect",		[](std::string args) { sys::connect(args); } },
 		{ "cls",			[](std::string args) { cli::log_reset(); } },
 		{ "exit",			[](std::string args) { exit(0); } },
 
-		{ "set",			[](std::string args) { return; }, subcmd{
+		{ "echo",			[](std::string args) { sys::echo(); } },
+
+		{ "write",			[](std::string args) {}, subcmd{
+			{ "byte",			[](std::string args) { sys::write_byte(args); }},
+			{ "array",			[](std::string args) { return; }},
+			{ "spi",			[](std::string args) { return; }},
+			/// ...
+		})},
+
+		{ "set",			[](std::string args) {}, subcmd{
 			{ "mode",			[](std::string args) { return; }, subcmd{
 				{ "standby",		[](std::string args) { return; } },
 				{ "manual",			[](std::string args) { return; } },
@@ -30,7 +37,7 @@ int main()
 			/// ...
 		})},
 
-		{ "get",			[](std::string args) { return; }, subcmd{
+		{ "get",			[](std::string args) {}, subcmd{
 			{ "enc",			[](std::string args) { sys::get_enc(args); }},
 			/// ...
 		})},

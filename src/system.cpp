@@ -1,19 +1,16 @@
 #include "system.h"
 
-//// Constants ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//// Definitions //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Private Declarations /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace sys
 {
 
 }
 
-void sys::connect(std::string com_port)
-{
-	// configure callbacks
-	
+//// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void sys::connect(std::string com_port)
+{	
 	// MSG callback (by-value)
 	uart::reciever::callback_msg = [=](uart::UART_FRAME frame)
 	{
@@ -25,11 +22,11 @@ void sys::connect(std::string com_port)
 	// STREAM callback
 	uart::reciever::callback_stm = nullptr;
 
-	// connect UART
+	// connect UART to specified or default COM port
 	(com_port == "") ? uart::connect() : uart::connect(com_port.c_str());
 }
 
-void sys::write(std::string byte)
+void sys::write_byte(std::string byte)
 {
 	if (byte == "")
 	{
@@ -37,12 +34,26 @@ void sys::write(std::string byte)
 		return;
 	}
 
+	// create payload vector and transmit data
 	std::vector<uint8_t> tx_data = { (uint8_t)std::stoi(byte) };
 	uart::send(uart::UART_FRAME_TYPE::RAW, tx_data);
 }
 
+void sys::write_array(std::string args)
+{
+	// cmd: "write array 1 222 19 45" sends the bytes 1, 222, 19, 45
+	// parsed from args string
+}
+
+void sys::write_spi(std::string args)
+{
+	// cmd: "write spi 1 17" sends the byte 17 to the 4-bit address 1
+	// requires logic on the MCU
+}
+
 void sys::echo()
 {
+	// create payload vector and transmit data
 	std::vector<uint8_t> tx_data = { 0x00 };
 	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
 }

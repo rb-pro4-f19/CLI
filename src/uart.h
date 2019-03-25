@@ -29,7 +29,7 @@ extern "C"
 
 namespace uart
 {
-	// Public Constructs
+	// public constructs
 
 	struct UART_FRAME
 	{
@@ -60,11 +60,7 @@ namespace uart
 		MSG			= 0x07
 	};
 
-	// Public Members
-
-	;
-
-	// Public Methods
+	// public methods
 
 	void		connect(const char* com_port = UART_COM_PORT);
 	void		disconnect();
@@ -73,6 +69,8 @@ namespace uart
 	bool		request(uint8_t* buffer);
 
 	void		print_frame(UART_FRAME& frame);
+
+	// public members
 
 	namespace reciever
 	{

@@ -5,7 +5,7 @@
 namespace uart
 {
 
-	// Private Members
+	// private members
 
 	bool connected = false;
 	int tx_timeout_ms = 50;
@@ -16,14 +16,14 @@ namespace uart
 	COMSTAT	com_status;
 	DWORD	com_errors;
 
-	// Private Methods
+	// private methods
 	
 	bool write_byte(uint8_t byte);
 	bool write_array(std::vector<uint8_t>& data);
 	bool read_byte(uint8_t& destination_byte);
 	uint8_t parse_byte(uint8_t byte, UART_FRAME_FIELD field);
 
-	// Sub Namespaces
+	// sub namespaces
 
 	namespace buffer
 	{
