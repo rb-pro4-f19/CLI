@@ -10,7 +10,7 @@ namespace sys
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void sys::connect(std::string com_port)
-{	
+{
 	// MSG callback (by-value)
 	uart::reciever::callback_msg = [=](uart::UART_FRAME frame)
 	{
@@ -40,9 +40,22 @@ void sys::write_byte(std::string byte)
 }
 
 void sys::write_array(std::string args)
+// cmd: "write array 1 222 19 45" sends the bytes 1, 222, 19, 45
 {
-	// cmd: "write array 1 222 19 45" sends the bytes 1, 222, 19, 45
+	if (args == "")
+	{
+		printf("WRITE ERROR: No write data specified.\n");
+		return;
+	}
+
 	// parsed from args string
+	for(int i = 0; i < args.length(); i++)
+	{
+		write_byte(std::to_string(args[i]));
+	}
+
+	
+	
 }
 
 void sys::write_spi(std::string args)

@@ -21,7 +21,7 @@ int main()
 
 		{ "write",			[](std::string args) {}, subcmd{
 			{ "byte",			[](std::string args) { sys::write_byte(args); }},
-			{ "array",			[](std::string args) { return; }},
+			{ "array",			[](std::string args) { sys::write_array(args); }},
 			{ "spi",			[](std::string args) { return; }},
 			/// ...
 		})},
