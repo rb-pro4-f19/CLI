@@ -7,18 +7,14 @@ All notable changes to this project will be documented in this file.
 - `cli::log_insert()` breaks when input line not in view / scroll overflow.
 
 #### Todo
-- `.write_array()` method.
 - `.write_spi()` method.
 - Centralized `cli::log()` method with log level, colors etc.
 - `constexpr` for expressions, common defualt file.
 - Improved error handling and messages.
 
-<!-- ----------------------------------------------------------------------------------------- -->
-
-### [1.5.0] - 2019-03-31
-
-#### Changed
-- `.write_array()`+ CMD table entry
+#### Added
+- `.write_array()` + command entry "write array".
+- `.set_freq()` + command entry "set freq".
 
 <!-- ----------------------------------------------------------------------------------------- -->
 

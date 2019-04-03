@@ -53,9 +53,6 @@ void sys::write_array(std::string args)
 	{
 		write_byte(std::to_string(args[i]));
 	}
-
-	
-	
 }
 
 void sys::write_spi(std::string args)
@@ -88,6 +85,26 @@ void sys::set_pwm(std::string& args)
 
 	// construct and send frame
 	std::vector<uint8_t> tx_data = { uart_id, motor, pwm_val };
+	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
+}
+
+void sys::set_freq(std::string& args)
+{
+	// split input delimited by spaces into vector of strings
+	auto args_vec = cli::split_str(args);
+
+	// check that correct num of parameters was passed
+	if (args_vec.size() != 2) { return; }
+
+	// construct variables to be correctly parsed by MCU & FPGA
+	// MOT0 = 0x01 & MOT1 = 0x02
+	// e.g. set pwm 1 200 = set motor MOT1 (0x02) to pwm_val 200
+	uint8_t motor = std::stoi(args_vec[0]) + 1;
+	uint8_t freq_val = std::stoi(args_vec[1]);
+	uint8_t uart_id = 0x02;
+
+	// construct and send frame
+	std::vector<uint8_t> tx_data = { uart_id, motor, freq_val };
 	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
 }
 

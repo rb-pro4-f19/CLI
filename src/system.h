@@ -34,5 +34,6 @@ namespace sys
 
 	void echo();
 	void set_pwm(std::string& args);
+	void set_freq(std::string& args);
 	void get_enc(std::string& args);
 }

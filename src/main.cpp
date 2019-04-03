@@ -34,6 +34,7 @@ int main()
 				/// ...
 			})},
 			{ "pwm",			[](std::string args) { sys::set_pwm(args); }},
+			{ "freq",			[](std::string args) { sys::set_freq(args); }},
 			/// ...
 		})},
 
