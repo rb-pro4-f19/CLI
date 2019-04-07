@@ -37,6 +37,7 @@ void sys::write_byte(std::string byte)
 	// create payload vector and transmit data
 	std::vector<uint8_t> tx_data = { (uint8_t)std::stoi(byte) };
 	uart::send(uart::UART_FRAME_TYPE::RAW, tx_data);
+	std::cout<<  byte <<std::endl;
 }
 
 void sys::write_array(std::string args)
@@ -47,11 +48,11 @@ void sys::write_array(std::string args)
 		printf("WRITE ERROR: No write data specified.\n");
 		return;
 	}
-
+	std::vector<std::string> str_array = cli::split_str(args);
 	// parsed from args string
-	for(int i = 0; i < args.length(); i++)
+	for(int i = 0; i < str_array.size(); i++)
 	{
-		write_byte(std::to_string(args[i]));
+		sys::write_byte(str_array[i]);
 	}
 }
 
