@@ -37,7 +37,6 @@ void sys::write_byte(std::string byte)
 	// create payload vector and transmit data
 	std::vector<uint8_t> tx_data = { (uint8_t)std::stoi(byte) };
 	uart::send(uart::UART_FRAME_TYPE::RAW, tx_data);
-	std::cout<<  byte <<std::endl;
 }
 
 void sys::write_array(std::string args)
