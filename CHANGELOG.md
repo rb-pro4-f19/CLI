@@ -16,6 +16,12 @@ All notable changes to this project will be documented in this file.
 - `.write_array()` + command entry "write array".
 - `.set_freq()` + command entry "set freq".
 
+#### Changed
+- Implemented `.queue_size()`
+
+#### Fixed
+- Size check in `.set_pwm()` fixed; had wrong logic operator.
+
 <!-- ----------------------------------------------------------------------------------------- -->
 
 ### [1.4.0] - 2019-03-25

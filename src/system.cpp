@@ -74,7 +74,7 @@ void sys::set_pwm(std::string& args)
 	auto args_vec = cli::split_str(args);
 
 	// check that correct num of parameters was passed
-	if (!args_vec.size() == 2) { return; }
+	if (args_vec.size() != 2) { return; }
 
 	// construct variables to be correctly parsed by MCU & FPGA
 	// MOT0 = 0x01 & MOT1 = 0x02

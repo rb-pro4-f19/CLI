@@ -116,6 +116,7 @@ void uart::connect(const char* com_port)
 		return;
 	}
 
+	com_parameters.DCBlength	= 256;
 	com_parameters.BaudRate		= UART_BAUD;
 	com_parameters.ByteSize		= UART_BYTESIZE;
 	com_parameters.StopBits		= ONESTOPBIT;
@@ -332,7 +333,7 @@ bool uart::buffer::has_data()
 
 int uart::buffer::queue_size()
 {
-	return 0;
+	return com_status.cbInQue;
 }
 
 void uart::buffer::flush()
@@ -384,6 +385,8 @@ void uart::reciever::worker()
 
 				// reserve expected size for vector 
 				reciever::frame.payload.reserve(reciever::frame.size);
+
+				//printf("Expecting %d bytes of data.\n", reciever::frame.size);
 
 				// begin recieving
 				reciever::state = RECIEVE;
