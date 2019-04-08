@@ -47,11 +47,11 @@ void sys::write_array(std::string args)
 		printf("WRITE ERROR: No write data specified.\n");
 		return;
 	}
-
+	std::vector<std::string> str_array = cli::split_str(args);
 	// parsed from args string
-	for(int i = 0; i < args.length(); i++)
+	for(int i = 0; i < str_array.size(); i++)
 	{
-		write_byte(std::to_string(args[i]));
+		sys::write_byte(str_array[i]);
 	}
 }
 
