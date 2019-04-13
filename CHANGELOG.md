@@ -15,12 +15,14 @@ All notable changes to this project will be documented in this file.
 #### Added
 - `.write_array()` + command entry "write array".
 - `.set_freq()` + command entry "set freq".
+- `.set_mode()` + command entry "set mode".
+- `.get_hal()` + command entry "get hal".
 
 #### Changed
 - Implemented `.queue_size()`
 
 #### Fixed
-- Size check in `.set_pwm()` fixed; had wrong logic operator.
+- Size check in `.set_pwm()` and `.get_enc()` fixed; had wrong logic operator.
 
 <!-- ----------------------------------------------------------------------------------------- -->
 

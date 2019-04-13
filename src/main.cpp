@@ -27,12 +27,7 @@ int main()
 		})},
 
 		{ "set",			[](std::string args) {}, subcmd{
-			{ "mode",			[](std::string args) { return; }, subcmd{
-				{ "standby",		[](std::string args) { return; } },
-				{ "manual",			[](std::string args) { return; } },
-				{ "auto",			[](std::string args) { return; } },
-				/// ...
-			})},
+			{ "mode",			[](std::string args) { sys::set_mode(args); }},
 			{ "pwm",			[](std::string args) { sys::set_pwm(args); }},
 			{ "freq",			[](std::string args) { sys::set_freq(args); }},
 			/// ...
@@ -40,6 +35,7 @@ int main()
 
 		{ "get",			[](std::string args) {}, subcmd{
 			{ "enc",			[](std::string args) { sys::get_enc(args); }},
+			{ "hal",			[](std::string args) { sys::get_hal(args); }},
 			/// ...
 		})},
 

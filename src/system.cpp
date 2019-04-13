@@ -68,6 +68,38 @@ void sys::echo()
 	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
 }
 
+void sys::set_mode(std::string& args)
+{
+	// split input delimited by spaces into vector of strings
+	auto args_vec = cli::split_str(args);
+
+	// check that correct num of parameters was passed
+	if (args_vec.size() != 1) { return; }
+
+	// construct variables to be correctly parsed by MCU & FPGA
+	uint8_t mode = 0;
+	uint8_t uart_id = 0x00;
+
+	// parse arguments
+	// by number
+	if (args.size() == 1)
+	{
+		mode = std::stoi(args);
+	}
+	// by string
+	else
+	{
+		if (args == "idle")		mode = 0;
+		if (args == "cal")		mode = 1;
+		if (args == "tune")		mode = 2;
+		if (args == "operate")	mode = 3;
+	}
+
+	// construct and send frame
+	std::vector<uint8_t> tx_data = { uart_id, mode };
+	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
+}
+
 void sys::set_pwm(std::string& args)
 {
 	// split input delimited by spaces into vector of strings
@@ -114,7 +146,7 @@ void sys::get_enc(std::string& args)
 	auto args_vec = cli::split_str(args);
 
 	// check that correct num of parameters was passed
-	if (!args_vec.size() == 1) { return; }
+	if (args_vec.size() != 1) { return; }
 
 	// construct variables to be correctly parsed by MCU & FPGA
 	// ENC0 = 0x03 & ENC1 = 0x04
@@ -124,5 +156,24 @@ void sys::get_enc(std::string& args)
 
 	// construct and send frame
 	std::vector<uint8_t> tx_data = { uart_id, encoder };
+	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
+}
+
+void sys::get_hal(std::string& args)
+{
+	// split input delimited by spaces into vector of strings
+	auto args_vec = cli::split_str(args);
+
+	// check that correct num of parameters was passed
+	if (args_vec.size() != 1) { return; }
+
+	// construct variables to be correctly parsed by MCU & FPGA
+	// HAL0 = 0x05 & HAL1 = 0x06
+	// e.g. get hal 0 = read hall sensor HAL0 (0x05)
+	uint8_t hsen = std::stoi(args_vec[0]) + 5;
+	uint8_t uart_id = 0x02;
+
+	// construct and send frame
+	std::vector<uint8_t> tx_data = { uart_id, hsen };
 	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
 }

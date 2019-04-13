@@ -33,7 +33,10 @@ namespace sys
 	void write_spi(std::string args);
 
 	void echo();
+	void set_mode(std::string& args);
 	void set_pwm(std::string& args);
 	void set_freq(std::string& args);
+
 	void get_enc(std::string& args);
+	void get_hal(std::string& args);
 }
