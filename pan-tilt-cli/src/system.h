@@ -1,14 +1,23 @@
 #pragma once
 
 #include <string>
+#include <thread>
+#include <atomic>
 #include <functional>
 
+#include <stdio.h>
+#include <conio.h>
+#include <tchar.h>
+#include <windows.h>
+
+#include "..\..\shm_def.h"
 #include "uart.h"
 #include "cli.h"
 
+
 //// Defines //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define SYSTEM_VERSION "1.5.0"
+#define SYSTEM_VERSION "1.6.0"
 
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -27,6 +36,7 @@ namespace sys
 	// public methods
 
 	void connect(std::string com_port);
+	void gui();
 
 	void write_byte(std::string byte);
 	void write_array(std::string args);

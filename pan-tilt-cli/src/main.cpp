@@ -19,6 +19,9 @@ int main()
 
 		{ "echo",			[](std::string args) { sys::echo(); } },
 
+		{ "gui",			[](std::string args) { sys::gui(); } },
+		{ "gt",				[](std::string args) { uart::reciever::callback_stm(uart::UART_FRAME()); } },
+
 		{ "write",			[](std::string args) {}, subcmd{
 			{ "byte",			[](std::string args) { sys::write_byte(args); }},
 			{ "array",			[](std::string args) { sys::write_array(args); }},
