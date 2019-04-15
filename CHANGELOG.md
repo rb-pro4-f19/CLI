@@ -9,8 +9,27 @@ All notable changes to this project will be documented in this file.
 #### Todo
 - `.write_spi()` method.
 - Centralized `cli::log()` method with log level, colors etc.
-- `constexpr` for expressions, common defualt file.
+- `constexpr` for expressions, common default file.
 - Improved error handling and messages.
+
+<!-- ----------------------------------------------------------------------------------------- -->
+
+### [1.6.0] - 2019-04-15
+
+#### Added
+- `shm_def.h` file for common shared memory definitions.
+- `namespace shm` to `sys.h` for shared memory functionality.
+- `pan-tilt-gui` project with `gui.h`.
+- `sys::gui()` method + command entry "gui" for launching `pan-tilt-gui` executable + shared memory configuration; still needs complete MCU/UART implementation.
+
+#### Changed
+- Renamed solution to `pan-tilt-sys`; separated into `pan-tilt-cli` and `pan-tilt-gui`.
+
+---
+
+<!-- ----------------------------------------------------------------------------------------- -->
+
+### [1.5.0] - 2019-04-12
 
 #### Added
 - `.write_array()` + command entry "write array".
@@ -23,6 +42,8 @@ All notable changes to this project will be documented in this file.
 
 #### Fixed
 - Size check in `.set_pwm()` and `.get_enc()` fixed; had wrong logic operator.
+
+---
 
 <!-- ----------------------------------------------------------------------------------------- -->
 
