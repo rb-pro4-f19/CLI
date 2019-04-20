@@ -5,12 +5,43 @@ All notable changes to this project will be documented in this file.
 
 #### Known Issues
 - `cli::log_insert()` breaks when input line not in view / scroll overflow.
+- `callback_thread.detach()` in `UART_RX_STATE::VALIDATE` might break if same callback overlaps.
 
 #### Todo
 - `.write_spi()` method.
 - Centralized `cli::log()` method with log level, colors etc.
 - `constexpr` for expressions, common default file.
 - Improved error handling and messages.
+-
+---
+
+<!-- ----------------------------------------------------------------------------------------- -->
+
+### [1.7.0] - 2019-04-20
+
+#### Added
+- Add `.set_gui()` + command entry "set gui".
+- Add `.set_msg()` + command entry "set msg".
+- Add `STREAM_FRAME_SIZE` `enum`.
+- Add `sys::stream_handler()`.
+- Add `sstr()` in `uart.h`; templated fold expression.
+- Add buffer overflow flushing after `UART_BUFFER_FLUSH_TH` number of bytes.
+- Add `mode_str` literal to `pan-tilt-gui`.
+
+#### Changed
+- Updated `sys::gui()` method to accommodate DPI when resizing window (untested) + updated variable names.
+- Removed `string` passing by-ref from `set` & `get` methods.
+- Updated `shm_def.h` structs to match `MCU` data types.
+- Set `UART` baudrate to `921600`.
+- Update `UART_MAX_PAYLOAD_SIZE` to `31 bytes`.
+- Disabled frame transmission logging; only showing errors now.
+- Updated `uart::buffer::queue_size()` to properly show bytes in queue.
+- Removed `500 ms` sleep in `UART_RX_STATE::RESET` state.
+- Cast struct elements to proper types for `cout` in `pan-tilt-gui`.
+- Removed `gt` command entry.
+
+#### Fixed
+- Removed `reciever::callback_ack = nullptr` from `UART_RX_STATE::VALIDATE` state; used to sometimes result in dangling pointer.
 
 <!-- ----------------------------------------------------------------------------------------- -->
 
@@ -32,10 +63,10 @@ All notable changes to this project will be documented in this file.
 ### [1.5.0] - 2019-04-12
 
 #### Added
-- `.write_array()` + command entry "write array".
-- `.set_freq()` + command entry "set freq".
-- `.set_mode()` + command entry "set mode".
-- `.get_hal()` + command entry "get hal".
+- Add `.write_array()` + command entry "write array".
+- Add `.set_freq()` + command entry "set freq".
+- Add `.set_mode()` + command entry "set mode".
+- Add `.get_hal()` + command entry "get hal".
 
 #### Changed
 - Implemented `.queue_size()`
@@ -51,13 +82,13 @@ All notable changes to this project will be documented in this file.
 
 #### Added
 
-- `.set_pwm()` + command entry "set pwm".
-- `.get_enc()` + command entry "get enc".
-- `cmd_func(x)` define for shorter lambdas; currently unused.
+- Add `.set_pwm()` + command entry "set pwm".
+- Add `.get_enc()` + command entry "get enc".
+- Add `cmd_func(x)` define for shorter lambdas; currently unused.
 - 500ms delay in UART `EXCEPTION` handler state.
-- `.split_str()` method.
-- `.write_array()` prototype and placeholder + CMD table entry.
-- `.write_spi()` prototype and placeholder + CMD table entry.
+- Add `.split_str()` method.
+- Add `.write_array()` prototype and placeholder + CMD table entry.
+- Add `.write_spi()` prototype and placeholder + CMD table entry.
 
 #### Changed
 
@@ -128,6 +159,10 @@ All notable changes to this project will be documented in this file.
 <!-- ----------------------------------------------------------------------------------------- -->
 
 [Unreleased]: #changelog
+[1.7.0]: #changelog
+[1.6.0]: #changelog
+[1.5.0]: #changelog
+[1.4.0]: #changelog
 [1.3.0]: #changelog
 [1.2.0]: #changelog
 [1.1.0]: #changelog

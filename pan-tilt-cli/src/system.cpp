@@ -10,6 +10,12 @@ namespace sys
 	HWND	gTargetWindowHwnd = NULL;
 	BOOL CALLBACK myWNDENUMPROC(HWND hwCurHwnd, LPARAM lpMylp);
 
+	enum STREAM_FRAME_SIZE
+	{
+		STREAM_DAT_FRAME = 1,
+		STREAM_CMD_FRAME = 2
+	};
+
 	bool gui_open = false;
 
 	namespace shm
@@ -59,15 +65,7 @@ void sys::gui()
 	sys::shm::write(&sys::gui_data, sizeof(sys::gui_data));
 
 	// initialize MCU callback
-	uart::reciever::callback_stm = [&](uart::UART_FRAME frame)
-	{
-		// update data
-		auto msg_str = std::string(frame.payload.begin(), frame.payload.end());
-		sys::gui_data.mode = 1;
-
-		// write data to shared memory (by-ref)
-		sys::shm::write(&sys::gui_data, sizeof(sys::gui_data));
-	};	
+	uart::reciever::callback_stm = &sys::stream_handler;
 
 	// run process
 	STARTUPINFO si;
@@ -111,7 +109,18 @@ void sys::gui()
 
 	gPidToFind = pi.dwProcessId;
 	EnumWindows(sys::myWNDENUMPROC, NULL);
-	MoveWindow(sys::gTargetWindowHwnd, gui_pos_x, gui_pos_y, gui_dim_w, gui_dim_h, TRUE);
+
+	HWND gui_hwnd = sys::gTargetWindowHwnd;
+	auto gui_dpi = GetDpiForWindow(gui_hwnd);
+
+	MoveWindow(
+		gui_hwnd,
+		MulDiv(gui_pos_x, gui_dpi, 96),
+		MulDiv(gui_pos_y, gui_dpi, 96),
+		MulDiv(gui_dim_w, gui_dpi, 96),
+		MulDiv(gui_dim_h, gui_dpi, 96),
+		TRUE
+	);
 
 	// close process and thread handles
 	CloseHandle(pi.hProcess);
@@ -121,16 +130,34 @@ void sys::gui()
 	Sleep(100);
 
 	// relocate current console window
+	constexpr auto con_pos_x = gui_pos_x;
 	constexpr auto con_pos_y = gui_pos_y + gui_dim_h + 5;
+	constexpr auto con_dim_w = gui_dim_w;
+	constexpr auto con_dim_h = 300;
 
-	HWND hwnd = GetConsoleWindow();
-	MoveWindow(hwnd, gui_pos_x, con_pos_y, gui_dim_w, 300, TRUE);
+	HWND con_hwnd	= GetConsoleWindow();
+	auto con_dpi	= GetDpiForWindow(con_hwnd);
+	
+	MoveWindow(
+		con_hwnd,
+		MulDiv(con_pos_x, con_dpi, 96),
+		MulDiv(con_pos_y, con_dpi, 96),
+		MulDiv(con_dim_w, con_dpi, 96),
+		MulDiv(con_dim_h, con_dpi, 96),
+		TRUE
+	);
 
 	// set focus to console
-	SetForegroundWindow(hwnd);
+	SetForegroundWindow(con_hwnd);
 
 	// update variable
 	sys::gui_open = true;
+
+	// disable MCU message logging
+	sys::set_msg("0");
+
+	// enable MCU GUI data transmission
+	sys::set_gui("1");
 }
 
 BOOL CALLBACK sys::myWNDENUMPROC(HWND hwCurHwnd, LPARAM lpMylp)
@@ -153,6 +180,40 @@ BOOL CALLBACK sys::myWNDENUMPROC(HWND hwCurHwnd, LPARAM lpMylp)
 	}
 
 	return TRUE;
+}
+
+void sys::stream_handler(uart::UART_FRAME frame)
+{
+	constexpr auto expected_num_bytes = sizeof(sys::gui_data);
+
+	static GUI_DATA	rx_data;
+	static uint8_t*	rx_data_ptr;
+	static unsigned rx_num_bytes = 0;
+
+	// check if reset frame recieved
+	if (frame.size == STREAM_CMD_FRAME)
+	{
+		rx_num_bytes = 0;
+		memset(&rx_data, 0, sizeof(rx_data));
+		rx_data_ptr = (uint8_t*)(&rx_data);
+		return;
+	}
+
+	// check if data frame; throw otherwise
+	if (frame.size != STREAM_DAT_FRAME) { return; }
+
+	// safety checks
+	if (rx_num_bytes >= expected_num_bytes || rx_data_ptr == nullptr) { return; }
+
+	// append data to struct
+	*rx_data_ptr++ = frame.payload[0];
+
+	// check if enough bytes recieved
+	if (++rx_num_bytes != expected_num_bytes) { return; }
+
+	// write data to shared memory (by-ref)
+	sys::gui_data = rx_data;
+	sys::shm::write(&sys::gui_data, sizeof(sys::gui_data));
 }
 
 void sys::write_byte(std::string byte)
@@ -197,7 +258,7 @@ void sys::echo()
 	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
 }
 
-void sys::set_mode(std::string& args)
+void sys::set_mode(std::string args)
 {
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
@@ -229,7 +290,41 @@ void sys::set_mode(std::string& args)
 	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
 }
 
-void sys::set_pwm(std::string& args)
+void sys::set_gui(std::string args)
+{
+	// split input delimited by spaces into vector of strings
+	auto args_vec = cli::split_str(args);
+
+	// check that correct num of parameters was passed
+	if (args_vec.size() != 1) { return; }
+
+	// construct variables to be correctly parsed by MCU & FPGA
+	uint8_t option = std::stoi(args);
+	uint8_t uart_id = 0x03;
+
+	// construct and send frame
+	std::vector<uint8_t> tx_data = { uart_id, option };
+	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
+}
+
+void sys::set_msg(std::string args)
+{
+	// split input delimited by spaces into vector of strings
+	auto args_vec = cli::split_str(args);
+
+	// check that correct num of parameters was passed
+	if (args_vec.size() != 1) { return; }
+	
+	// construct variables to be correctly parsed by MCU & FPGA
+	uint8_t option  = std::stoi(args);
+	uint8_t uart_id = 0x04;
+
+	// construct and send frame
+	std::vector<uint8_t> tx_data = { uart_id, option };
+	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
+}
+
+void sys::set_pwm(std::string args)
 {
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
@@ -249,7 +344,7 @@ void sys::set_pwm(std::string& args)
 	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
 }
 
-void sys::set_freq(std::string& args)
+void sys::set_freq(std::string args)
 {
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
@@ -269,7 +364,7 @@ void sys::set_freq(std::string& args)
 	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
 }
 
-void sys::get_enc(std::string& args)
+void sys::get_enc(std::string args)
 {
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
@@ -288,7 +383,7 @@ void sys::get_enc(std::string& args)
 	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
 }
 
-void sys::get_hal(std::string& args)
+void sys::get_hal(std::string args)
 {
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);

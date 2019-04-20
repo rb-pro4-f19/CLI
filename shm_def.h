@@ -1,24 +1,28 @@
 #pragma once
 
+// !!!
+// CONSTRUCTS MUST ALSO BE UPDATED ON THE MCU
+// OTHERWISE DATA TRANSMISSION WILL FAIL.
+
 // constructs
 struct MOT_DATA
 {
-	int		pwm;
-	int		freq;
-	int		enc;
-	float	spd;
-	int		hal;
+	int8_t		pwm;
+	uint8_t		freq;
+	uint16_t	enc;
+	float		spd;
+	uint8_t		hal;
 
-	int		pid_i;
-	int		pid_n;
-	float	pid_kp;
-	float	pid_ki;
-	float	pid_kd;
+	uint8_t		pid_i;
+	uint8_t		pid_n;
+	float		pid_kp;
+	float		pid_ki;
+	float		pid_kd;
 };
 
 struct GUI_DATA
 {
-	int mode;
+	uint8_t		mode;
 
 	MOT_DATA	mot0;
 	MOT_DATA	mot1;

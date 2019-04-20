@@ -66,6 +66,15 @@ namespace uart
 
 //// Method Definitions ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+template <typename... T >
+std::string sstr(T &&... args)
+{
+	std::ostringstream sstr;
+	// fold expression
+	((sstr << std::dec) << ... << args);
+	return sstr.str();
+}
+
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// ::uart methods
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,7 +125,6 @@ void uart::connect(const char* com_port)
 		return;
 	}
 
-	com_parameters.DCBlength	= 256;
 	com_parameters.BaudRate		= UART_BAUD;
 	com_parameters.ByteSize		= UART_BYTESIZE;
 	com_parameters.StopBits		= ONESTOPBIT;
@@ -188,8 +196,9 @@ bool uart::send(UART_FRAME_TYPE type, std::vector<uint8_t>& data)
 	// append cheksum
 	tx_data.push_back(tx_frame.checksum);
 
-	printf("SENDING FRAME: ");
-	uart::print_frame(tx_frame);
+	// print info
+	//printf("SENDING FRAME: ");
+	//uart::print_frame(tx_frame);
 
 	// setup ack callback
 	std::atomic<bool> tx_ack = false;
@@ -216,8 +225,8 @@ bool uart::send(UART_FRAME_TYPE type, std::vector<uint8_t>& data)
 	// validate acknowledge
 	if (!tx_ack)
 	{
-		printf("ACKNOWLEDGE ERROR: Did not recieve an acknowledge before timeout.\n");
 		uart::reciever::callback_ack = nullptr;
+		printf("ACKNOWLEDGE ERROR: Did not recieve an acknowledge before timeout.\n");
 		return false;
 	}
 
@@ -231,9 +240,11 @@ bool uart::send(UART_FRAME_TYPE type, std::vector<uint8_t>& data)
 		printf("CHECKSUM ERROR: Did not recieve an acknowledge before timeout.\n");
 		return false;
 	}
+	
+	// print ACK info
+	//printf("TRANSMISSION SUCCESS: Recieved ACK with checksum : 0x%X\n", ack_frame.checksum);
 
 	// return
-	printf("TRANSMISSION SUCCESS: Recieved ACK with checksum : 0x%X\n", ack_frame.checksum);
 	return true;
 }
 
@@ -333,13 +344,14 @@ bool uart::buffer::has_data()
 
 int uart::buffer::queue_size()
 {
+	ClearCommError(uart::com_handler, &uart::com_errors, &uart::com_status);
 	return com_status.cbInQue;
 }
 
 void uart::buffer::flush()
 {
 	PurgeComm(uart::com_handler, PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR);
-	printf("Buffer was flushed.\n");
+	//printf("COM buffer was flushed.\n");
 }
 
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -470,17 +482,23 @@ void uart::reciever::worker()
 				// check callback
 				if (callback == nullptr)
 				{
-					reciever::error_msg = "CALLBACK ERROR: No callback was specified or error in frame type.";
+					//reciever::error_msg = "CALLBACK ERROR: No callback was specified or error in frame type.";
+					reciever::error_msg = sstr("CALLBACK ERROR: No callback was specified for frame type: ", (int)reciever::frame.type, ".");
 					reciever::state = EXCEPTION;
 					break;
 				}
 
 				// perform callback on detached thread
 				std::thread callback_thread(callback, reciever::frame);
-				callback_thread.detach();				
+				callback_thread.detach();
+
+				// print number of data in queue
+				//printf("Bytes in queue: %d.\n", uart::buffer::queue_size());
+
+				// flush if queue too large (outdated)
+				if (uart::buffer::queue_size() > UART_BUFFER_FLUSH_TH) { uart::buffer::flush(); }
 
 				// reset reciever
-				reciever::callback_ack = nullptr;
 				reciever::state = LISTEN;
 				break;
 			}
@@ -492,11 +510,10 @@ void uart::reciever::worker()
 				printf(reciever::error_msg.c_str());
 				printf("\n");
 
-				// sleep for a while
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				// flush buffer
+				buffer::flush();
 				
 				// reset
-				buffer::flush();
 				reciever::state = LISTEN;
 				break;
 			}

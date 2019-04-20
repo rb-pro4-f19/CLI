@@ -111,7 +111,20 @@ void gui::draw()
 
 	LN("Pan-Tilt System GUI")
 	EMPTYLN
-	LN("Mode:")
+	
+	static std::string mode_str = "";
+
+	switch ((int)gui::data.mode)
+	{
+		case 0:		mode_str = "idle"; break;
+		case 1:		mode_str = "calibration"; break;
+		case 2:		mode_str = "tuning"; break;
+		case 3:		mode_str = "operating"; break;
+		default:	mode_str = "undefined";
+	}
+
+	LN(sstr("Mode: ", (int)gui::data.mode, " (", mode_str, ")"));
+
 	EMPTYLN
 
 	BORDER
@@ -135,37 +148,37 @@ void gui::draw()
 
 		// PWM
 	cout << BORDERL <<
-		setw(COL1) << left << "PWM:" << setw(COL2) << right << gui::data.mot0.pwm <<
+		setw(COL1) << left << "PWM:" << setw(COL2) << right << (int)gui::data.mot0.pwm <<
 		setw(COLSEPW) << COLSEP <<
-		setw(COL1) << left << "PWM:" << setw(COL2) << right << gui::data.mot1.pwm <<
+		setw(COL1) << left << "PWM:" << setw(COL2) << right << (int)gui::data.mot1.pwm <<
 	BORDERR << endl;
 
 	// Frequency
 	cout << BORDERL <<
-		setw(COL1) << left << "Frequency:" << setw(COL2) << right << gui::data.mot0.freq <<
+		setw(COL1) << left << "Frequency:" << setw(COL2) << right << (int)gui::data.mot0.freq <<
 		setw(COLSEPW) << COLSEP <<
-		setw(COL1) << left << "Frequency:" << setw(COL2) << right << gui::data.mot1.freq <<
+		setw(COL1) << left << "Frequency:" << setw(COL2) << right << (int)gui::data.mot1.freq <<
 	BORDERR << endl;
 
 	// Speed
 	cout << BORDERL <<
-		setw(COL1) << left << "Speed:" << setw(COL2) << right << gui::data.mot0.spd <<
+		setw(COL1) << left << "Speed:" << setw(COL2) << right << (float)gui::data.mot0.spd <<
 		setw(COLSEPW) << COLSEP <<
-		setw(COL1) << left << "Speed:" << setw(COL2) << right << gui::data.mot1.spd <<
+		setw(COL1) << left << "Speed:" << setw(COL2) << right << (float)gui::data.mot1.spd <<
 	BORDERR << endl;
 
 	// Encoder
 	cout << BORDERL <<
-		setw(COL1) << left << "Encoder:" << setw(COL2) << right << gui::data.mot0.enc <<
+		setw(COL1) << left << "Encoder:" << setw(COL2) << right << (int)gui::data.mot0.enc <<
 		setw(COLSEPW) << COLSEP <<
-		setw(COL1) << left << "Encoder:" << setw(COL2) << right << gui::data.mot1.enc <<
+		setw(COL1) << left << "Encoder:" << setw(COL2) << right << (int)gui::data.mot1.enc <<
 	BORDERR << endl;
 
 	// Hall Sensor
 	cout << BORDERL <<
-		setw(COL1) << left << "Hall:" << setw(COL2) << right << gui::data.mot0.hal <<
+		setw(COL1) << left << "Hall:" << setw(COL2) << right << (int)gui::data.mot0.hal <<
 		setw(COLSEPW) << COLSEP <<
-		setw(COL1) << left << "Hall:" << setw(COL2) << right << gui::data.mot1.hal <<
+		setw(COL1) << left << "Hall:" << setw(COL2) << right << (int)gui::data.mot1.hal <<
 	BORDERR << endl;
 
 	// empty line w/ # in middle
@@ -180,30 +193,30 @@ void gui::draw()
 
 	// PID / Kp
 	cout << BORDERL <<
-		setw(COL1) << left << "" << setw(COLPID) << left << "Kp: " << setw(COL2 - COLPID) << right << gui::data.mot0.pid_kd <<
+		setw(COL1) << left << "" << setw(COLPID) << left << "Kp: " << setw(COL2 - COLPID) << right << (float)gui::data.mot0.pid_kp <<
 		setw(COLSEPW) << COLSEP <<
-		setw(COL1) << left << "" << setw(COLPID) << left << "Kp: " << setw(COL2 - COLPID) << right << gui::data.mot1.pid_kd <<
+		setw(COL1) << left << "" << setw(COLPID) << left << "Kp: " << setw(COL2 - COLPID) << right << (float)gui::data.mot1.pid_kp <<
 	BORDERR << endl;
 
 	// PID / Ki
 	cout << BORDERL <<
-		setw(COL1) << left << "" << setw(COLPID) << left << "Ki: " << setw(COL2 - COLPID) << right << gui::data.mot0.pid_ki <<
+		setw(COL1) << left << "" << setw(COLPID) << left << "Ki: " << setw(COL2 - COLPID) << right << (float)gui::data.mot0.pid_ki <<
 		setw(COLSEPW) << COLSEP <<
-		setw(COL1) << left << "" << setw(COLPID) << left << "Ki: " << setw(COL2 - COLPID) << right << gui::data.mot1.pid_ki <<
+		setw(COL1) << left << "" << setw(COLPID) << left << "Ki: " << setw(COL2 - COLPID) << right << (float)gui::data.mot1.pid_ki <<
 	BORDERR << endl;
 
 	// PID / Kd
 	cout << BORDERL <<
-		setw(COL1) << left << "" << setw(COLPID) << left << "Kd: " << setw(COL2 - COLPID) << right << gui::data.mot0.pid_kd <<
+		setw(COL1) << left << "" << setw(COLPID) << left << "Kd: " << setw(COL2 - COLPID) << right << (float)gui::data.mot0.pid_kd <<
 		setw(COLSEPW) << COLSEP <<
-		setw(COL1) << left << "" << setw(COLPID) << left << "Kd: " << setw(COL2 - COLPID) << right << gui::data.mot1.pid_kd <<
+		setw(COL1) << left << "" << setw(COLPID) << left << "Kd: " << setw(COL2 - COLPID) << right << (float)gui::data.mot1.pid_kd <<
 	BORDERR << endl;
 
 	// PID / n
 	cout << BORDERL <<
-		setw(COL1) << left << "" << setw(COLPID) << left << "n: " << setw(COL2 - COLPID) << right << gui::data.mot0.pid_n <<
+		setw(COL1) << left << "" << setw(COLPID) << left << "n: " << setw(COL2 - COLPID) << right << (int)gui::data.mot0.pid_n <<
 		setw(COLSEPW) << COLSEP <<
-		setw(COL1) << left << "" << setw(COLPID) << left << "n: " << setw(COL2 - COLPID) << right << gui::data.mot1.pid_n <<
+		setw(COL1) << left << "" << setw(COLPID) << left << "n: " << setw(COL2 - COLPID) << right << (int)gui::data.mot1.pid_n <<
 	BORDERR << endl;
 
 	// bottom border

@@ -20,7 +20,6 @@ int main()
 		{ "echo",			[](std::string args) { sys::echo(); } },
 
 		{ "gui",			[](std::string args) { sys::gui(); } },
-		{ "gt",				[](std::string args) { uart::reciever::callback_stm(uart::UART_FRAME()); } },
 
 		{ "write",			[](std::string args) {}, subcmd{
 			{ "byte",			[](std::string args) { sys::write_byte(args); }},
@@ -33,6 +32,8 @@ int main()
 			{ "mode",			[](std::string args) { sys::set_mode(args); }},
 			{ "pwm",			[](std::string args) { sys::set_pwm(args); }},
 			{ "freq",			[](std::string args) { sys::set_freq(args); }},
+			{ "gui",			[](std::string args) { sys::set_gui(args); }},
+			{ "msg",			[](std::string args) { sys::set_msg(args); }},
 			/// ...
 		})},
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <array>
 #include <vector>
@@ -17,13 +18,15 @@ extern "C"
 //// Defines //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define UART_COM_PORT			"COM4"
-#define UART_BAUD				CBR_9600
+//#define UART_BAUD				CBR_115200
+#define UART_BAUD				921600
 #define UART_BYTESIZE			8
 #define UART_ACK_TIMEOUT		3000
 
 #define UART_FRAME_TYPE_BITS	3
 #define UART_FRAME_SIZE_BITS	5
-#define UART_MAX_PAYLOAD_SIZE	256
+#define UART_MAX_PAYLOAD_SIZE	31
+#define UART_BUFFER_FLUSH_TH	256
 
 //// Public Declarations [Interface] //////////////////////////////////////////////////////////////////////////////////////////////
 
