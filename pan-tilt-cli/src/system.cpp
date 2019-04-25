@@ -254,7 +254,8 @@ void sys::write_spi(std::string args)
 void sys::echo()
 {
 	// create payload vector and transmit data
-	std::vector<uint8_t> tx_data = { 0x00 };
+	CMD_ID cmd_id = GET_ECHO;
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id };
 	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
 }
 
@@ -268,7 +269,7 @@ void sys::set_mode(std::string args)
 
 	// construct variables to be correctly parsed by MCU & FPGA
 	uint8_t mode = 0;
-	uint8_t uart_id = 0x00;
+	CMD_ID cmd_id = SET_MODE;
 
 	// parse arguments
 	// by number
@@ -286,7 +287,7 @@ void sys::set_mode(std::string args)
 	}
 
 	// construct and send frame
-	std::vector<uint8_t> tx_data = { uart_id, mode };
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, mode };
 	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
 }
 
@@ -300,10 +301,10 @@ void sys::set_gui(std::string args)
 
 	// construct variables to be correctly parsed by MCU & FPGA
 	uint8_t option = std::stoi(args);
-	uint8_t uart_id = 0x03;
+	CMD_ID cmd_id = SET_GUI;
 
 	// construct and send frame
-	std::vector<uint8_t> tx_data = { uart_id, option };
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, option };
 	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
 }
 
@@ -317,10 +318,10 @@ void sys::set_msg(std::string args)
 	
 	// construct variables to be correctly parsed by MCU & FPGA
 	uint8_t option  = std::stoi(args);
-	uint8_t uart_id = 0x04;
+	CMD_ID cmd_id = SET_MSG;
 
 	// construct and send frame
-	std::vector<uint8_t> tx_data = { uart_id, option };
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, option };
 	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
 }
 
@@ -335,12 +336,12 @@ void sys::set_pwm(std::string args)
 	// construct variables to be correctly parsed by MCU & FPGA
 	// MOT0 = 0x01 & MOT1 = 0x02
 	// e.g. set pwm 1 200 = set motor MOT1 (0x02) to pwm_val 200
-	uint8_t motor	= std::stoi(args_vec[0]) + 1;
+	uint8_t mot_id	= std::stoi(args_vec[0]) + 1;
 	uint8_t pwm_val	= std::stoi(args_vec[1]);
-	uint8_t uart_id	= 0x01;
+	CMD_ID cmd_id = SET_PWM;
 
 	// construct and send frame
-	std::vector<uint8_t> tx_data = { uart_id, motor, pwm_val };
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, mot_id, pwm_val };
 	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
 }
 
@@ -355,12 +356,106 @@ void sys::set_freq(std::string args)
 	// construct variables to be correctly parsed by MCU & FPGA
 	// MOT0 = 0x01 & MOT1 = 0x02
 	// e.g. set pwm 1 200 = set motor MOT1 (0x02) to pwm_val 200
-	uint8_t motor = std::stoi(args_vec[0]) + 1;
+	uint8_t mot_id = std::stoi(args_vec[0]) + 1;
 	uint8_t freq_val = std::stoi(args_vec[1]);
-	uint8_t uart_id = 0x02;
+	CMD_ID cmd_id = SET_FREQ;
 
 	// construct and send frame
-	std::vector<uint8_t> tx_data = { uart_id, motor, freq_val };
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, mot_id, freq_val };
+	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
+}
+
+void sys::set_pid(std::string args)
+{
+	// split input delimited by spaces into vector of strings
+	auto args_vec = cli::split_str(args);
+
+	// check that correct num of parameters was passed
+	if (args_vec.size() < 2) { return; }
+
+	// want to set all parameters?
+	bool set_all = (args_vec[1] == "all");
+
+	// check that correct num of parameters was passed if trying to set all
+	if (set_all && args_vec.size() < 6) { return; }
+
+	// construct variables to be correctly parsed by MCU & FPGA
+	// PID0/MOT0 = 0x01 & PID1/MOT1 = 0x02
+	// e.g. set pid 1 ... = set PID that controls MOT1 (0x02) to ...
+	uint8_t pid_id = std::stoi(args_vec[0]) + 1;
+
+	// check which pid parameters to set
+	if (args_vec[0] == "all")
+	// set pid <id> all <kp> <ki> <kd> <n>
+	{
+		sys::set_pid_param(pid_id, PID_PARAM::PID_KP, std::stof(args_vec[2]));
+		sys::set_pid_param(pid_id, PID_PARAM::PID_KI, std::stof(args_vec[3]));
+		sys::set_pid_param(pid_id, PID_PARAM::PID_KD, std::stof(args_vec[4]));
+		sys::set_pid_param(pid_id, PID_PARAM::PID_N,  std::stof(args_vec[5]));
+	}
+	// set pid <id> <param> <val>
+	else if (args_vec[1] == "kp") { sys::set_pid_param(pid_id, PID_PARAM::PID_KP, std::stof(args_vec[2])); }
+	else if (args_vec[1] == "ki") { sys::set_pid_param(pid_id, PID_PARAM::PID_KI, std::stof(args_vec[2])); }
+	else if (args_vec[1] == "kd") { sys::set_pid_param(pid_id, PID_PARAM::PID_KD, std::stof(args_vec[2])); }
+	else if (args_vec[1] == "n")  { sys::set_pid_param(pid_id, PID_PARAM::PID_N,  std::stof(args_vec[2])); }
+}
+
+void sys::set_pid_param(uint8_t pid_id, PID_PARAM pid_param, float value)
+{
+	// construct variables to be correctly parsed by MCU & FPGA
+	CMD_ID cmd_id = SET_PID;
+
+	// convert float into byte array
+	//char const* flt_array = reinterpret_cast<char const *>(&value);
+	unsigned char flt_array[sizeof(float)];
+	memcpy(flt_array, &value, sizeof(float));
+
+	// construct tx_data vector
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, (uint8_t)pid_id, (uint8_t)pid_param };
+
+	// insert float byte array into tx_data vector
+	tx_data.insert(tx_data.end(), &flt_array[0], &flt_array[sizeof(float)]);
+
+	// send tx_data
+	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
+
+	// code to recieve data
+	//float f = 0.0;
+	//memcpy(&f, flt_array, sizeof(float))
+	//printf("Value: %f.\n", f);
+}
+
+void sys::set_slew(std::string args)
+{
+	// split input delimited by spaces into vector of strings
+	auto args_vec = cli::split_str(args);
+
+	// check that correct num of parameters was passed
+	if (args_vec.size() != 1) { return; }
+
+	// construct variables to be correctly parsed by MCU & FPGA
+	uint8_t option = std::stoi(args);
+	CMD_ID cmd_id = SET_SLEW;
+
+	// construct and send frame
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, option };
+	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
+}
+
+void sys::set_bound(std::string args)
+{
+	// split input delimited by spaces into vector of strings
+	auto args_vec = cli::split_str(args);
+
+	// check that correct num of parameters was passed
+	if (args_vec.size() != 1) { return; }
+
+	// construct variables to be correctly parsed by MCU & FPGA
+	uint8_t option = std::stoi(args);
+	CMD_ID cmd_id = SET_BOUND;
+
+	// construct and send frame
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, option };
 	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
 }
 
@@ -375,11 +470,11 @@ void sys::get_enc(std::string args)
 	// construct variables to be correctly parsed by MCU & FPGA
 	// ENC0 = 0x03 & ENC1 = 0x04
 	// e.g. get enc 0 = read encoder ENC0 (0x03)
-	uint8_t encoder	= std::stoi(args_vec[0]) + 3;
-	uint8_t uart_id = 0x01;
+	uint8_t enc_id	= std::stoi(args_vec[0]) + 3;
+	CMD_ID cmd_id = GET_ENC;
 
 	// construct and send frame
-	std::vector<uint8_t> tx_data = { uart_id, encoder };
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, enc_id };
 	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
 }
 
@@ -394,11 +489,11 @@ void sys::get_hal(std::string args)
 	// construct variables to be correctly parsed by MCU & FPGA
 	// HAL0 = 0x05 & HAL1 = 0x06
 	// e.g. get hal 0 = read hall sensor HAL0 (0x05)
-	uint8_t hsen = std::stoi(args_vec[0]) + 5;
-	uint8_t uart_id = 0x02;
+	uint8_t hsen_id = std::stoi(args_vec[0]) + 5;
+	CMD_ID cmd_id = GET_HAL;
 
 	// construct and send frame
-	std::vector<uint8_t> tx_data = { uart_id, hsen };
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, hsen_id };
 	uart::send(uart::UART_FRAME_TYPE::GET, tx_data);
 }
 

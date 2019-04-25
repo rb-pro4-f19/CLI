@@ -12,7 +12,18 @@ All notable changes to this project will be documented in this file.
 - Centralized `cli::log()` method with log level, colors etc.
 - `constexpr` for expressions, common default file.
 - Improved error handling and messages.
--
+
+#### Added
+- Add `.set_pid()` + command entry "set pid".
+- Add `sys::set_pid_param()`.
+- Add `.set_slew()` + command entry "set slew".
+- Add `.set_bound()` + command entry "set bound".
+- Add `enum` `CMD_ID` to match with MCU `CMD_TABLE`.
+
+# Changed
+- Updated semantics of set/get methods; e.g. `motor` -> `mot_id`, `uart_id` -> `cmd_id`.
+- Removed `enum class SYSTEM_MODE`.
+
 ---
 
 <!-- ----------------------------------------------------------------------------------------- -->

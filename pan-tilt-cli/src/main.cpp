@@ -34,6 +34,9 @@ int main()
 			{ "freq",			[](std::string args) { sys::set_freq(args); }},
 			{ "gui",			[](std::string args) { sys::set_gui(args); }},
 			{ "msg",			[](std::string args) { sys::set_msg(args); }},
+			{ "pid",			[](std::string args) { sys::set_pid(args); }},
+			{ "slew",			[](std::string args) { sys::set_slew(args); }},
+			{ "bound",			[](std::string args) { sys::set_bound(args); }},
 			/// ...
 		})},
 

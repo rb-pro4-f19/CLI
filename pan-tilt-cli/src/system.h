@@ -26,11 +26,34 @@ namespace sys
 
 	// constructs
 
-	enum class SYSTEM_MODE
+	// should match across MCU & CLI
+	enum CMD_ID
 	{
-		STANDBY,
-		IDLE,
-		RUN
+		// UART_GET
+		GET_ECHO,
+		GET_ENC,
+		GET_HAL,
+
+		// UART_SET
+		SET_MODE,
+		SET_POS,
+		SET_GUI,
+		SET_MSG,
+		SET_PWM,
+		SET_FREQ,
+		SET_SLEW,
+		SET_BOUND,
+		SET_PID,
+	};
+
+	// should match across MCU & CLI
+	enum class PID_PARAM
+	{
+		PID_KP,		// proportional gain
+		PID_KI,		// integrator gain
+		PID_KD,		// derivative gain
+		PID_N,		// filter constant
+		PID_I,		// gain index
 	};
 
 	// public methods
@@ -45,12 +68,20 @@ namespace sys
 	void write_spi(std::string args);
 
 	void echo();
-	void set_mode(std::string args);
-	void set_gui(std::string args);
-	void set_msg(std::string args);
-	void set_pwm(std::string args);
-	void set_freq(std::string args);
 
 	void get_enc(std::string args);
 	void get_hal(std::string args);
+
+	void set_mode(std::string args);
+	void set_gui(std::string args);
+	void set_msg(std::string args);
+
+	void set_pwm(std::string args);
+	void set_freq(std::string args);
+	void set_slew(std::string args);
+	void set_bound(std::string args);
+
+	void set_pid(std::string args);
+	void set_pid_param(uint8_t pid_id, PID_PARAM pid_param, float value);
+
 }
