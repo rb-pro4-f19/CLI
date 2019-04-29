@@ -515,6 +515,46 @@ void sys::set_mode(std::string args)
 	uart::send(uart::UART_FRAME_TYPE::UART_SET, tx_data);
 }
 
+void sys::set_pos(std::string args)
+{
+	// split input delimited by spaces into vector of strings
+	auto args_vec = cli::split_str(args);
+
+	// check that correct num of parameters was passed
+	if (args_vec.size() == 1) { return; }
+
+	// parse desired angles
+	float theta_pan		= std::stof(args_vec[0]);
+	float theta_tilt	= std::stof(args_vec[1]);
+
+	// motor id's (SPI ADDRESS)
+	uint8_t mot0 = 0x01;
+	uint8_t mot1 = 0x02;
+
+	// set position
+	sys::set_pos_single(mot1, theta_pan);
+	sys::set_pos_single(mot0, theta_tilt);
+}
+
+void sys::set_pos_single(uint8_t mot_id, float value)
+{
+	// construct variables to be correctly parsed by MCU & FPGA
+	CMD_ID cmd_id = SET_POS;
+
+	// convert float into byte array
+	unsigned char flt_array[sizeof(float)];
+	memcpy(flt_array, &value, sizeof(float));
+
+	// construct tx_data vector
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, mot_id };
+
+	// insert float byte array into tx_data vector
+	tx_data.insert(tx_data.end(), &flt_array[0], &flt_array[sizeof(float)]);
+
+	// send tx_data
+	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
+}
+
 void sys::set_gui(std::string args)
 {
 	// split input delimited by spaces into vector of strings

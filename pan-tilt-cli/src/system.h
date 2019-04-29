@@ -87,6 +87,8 @@ namespace sys
 	void get_hal(std::string args);
 
 	void set_mode(std::string args);
+	void set_pos(std::string args);
+	void set_pos_single(uint8_t mot_id, float value);
 	void set_gui(std::string args);
 	void set_msg(std::string args);
 

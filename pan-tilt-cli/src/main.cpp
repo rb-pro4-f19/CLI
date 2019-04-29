@@ -38,6 +38,7 @@ int main()
 
 		{ "set",			[](std::string args) {}, subcmd{
 			{ "mode",			[](std::string args) { sys::set_mode(args); }},
+			{ "pos",			[](std::string args) { sys::set_pos(args); }},
 			{ "pwm",			[](std::string args) { sys::set_pwm(args); }},
 			{ "freq",			[](std::string args) { sys::set_freq(args); }},
 			{ "gui",			[](std::string args) { sys::set_gui(args); }},
