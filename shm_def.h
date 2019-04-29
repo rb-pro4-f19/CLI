@@ -9,7 +9,7 @@ struct MOT_DATA
 {
 	int8_t		pwm;
 	uint8_t		freq;
-	uint16_t	enc;
+	int16_t		enc;
 	float		spd;
 	uint8_t		hal;
 
