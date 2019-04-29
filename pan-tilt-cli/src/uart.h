@@ -51,16 +51,18 @@ namespace uart
 		CHECKUM
 	};
 
+	// maximum of 8 elements (2^3)
+	// should match across MCU & CLI
 	enum UART_FRAME_TYPE
 	{
-		CONNECT		= 0x00,
-		RAW			= 0x01,
-		GET			= 0x02,
-		SET			= 0x03,
-		ACK			= 0x04,
-		RESPONSE	= 0x05,
-		STREAM		= 0x06,
-		MSG			= 0x07
+		UART_DO,
+		UART_GET,
+		UART_SET,
+		UART_ACK,
+		UART_RESPONSE,
+		UART_MSG,
+		UART_STREAM,
+		UART_SAMPLEDATA
 	};
 
 	// public methods
@@ -73,6 +75,13 @@ namespace uart
 
 	void		print_frame(UART_FRAME& frame);
 
+	namespace buffer
+	{
+		bool	has_data();
+		int		queue_size();
+		void	flush();
+	}
+
 	// public members
 
 	namespace reciever
@@ -80,5 +89,6 @@ namespace uart
 		extern std::function<void(UART_FRAME frame)> callback_ack;
 		extern std::function<void(UART_FRAME frame)> callback_msg;
 		extern std::function<void(UART_FRAME frame)> callback_stm;
+		extern std::function<void(UART_FRAME frame)> callback_sam;
 	}
 }

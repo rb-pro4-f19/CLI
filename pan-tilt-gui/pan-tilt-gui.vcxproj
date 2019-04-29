@@ -94,7 +94,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)bin\$(PlatformShortName)\$(Configuration)\$(ProjectName).exe" "$(SolutionDir)pan-tilt-cli\bin\x64\Debug\gui.exe"</Command>
+      <Command>copy /Y "$(ProjectDir)bin\$(PlatformShortName)\$(Configuration)\$(ProjectName).exe" "$(SolutionDir)pan-tilt-cli\bin\$(PlatformShortName)\$(Configuration)\gui.exe"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -106,7 +106,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)bin\$(PlatformShortName)\$(Configuration)\$(ProjectName).exe" "$(SolutionDir)pan-tilt-cli\bin\x64\Debug\gui.exe"</Command>
+      <Command>copy /Y "$(ProjectDir)bin\$(PlatformShortName)\$(Configuration)\$(ProjectName).exe" "$(SolutionDir)pan-tilt-cli\bin\$(PlatformShortName)\$(Configuration)\gui.exe"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -124,7 +124,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)bin\$(PlatformShortName)\$(Configuration)\$(ProjectName).exe" "$(SolutionDir)pan-tilt-cli\bin\x64\Debug\gui.exe"</Command>
+      <Command>copy /Y "$(ProjectDir)bin\$(PlatformShortName)\$(Configuration)\$(ProjectName).exe" "$(SolutionDir)pan-tilt-cli\bin\$(PlatformShortName)\$(Configuration)\gui.exe"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -142,7 +142,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)bin\$(PlatformShortName)\$(Configuration)\$(ProjectName).exe" "$(SolutionDir)pan-tilt-cli\bin\x64\Debug\gui.exe"</Command>
+      <Command>copy /Y "$(ProjectDir)bin\$(PlatformShortName)\$(Configuration)\$(ProjectName).exe" "$(SolutionDir)pan-tilt-cli\bin\$(PlatformShortName)\$(Configuration)\gui.exe"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

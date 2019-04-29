@@ -13,16 +13,39 @@ All notable changes to this project will be documented in this file.
 - `constexpr` for expressions, common default file.
 - Improved error handling and messages.
 
+---
+
+<!-- ----------------------------------------------------------------------------------------- -->
+
+### [1.8.0] - 2019-04-29
+
 #### Added
-- Add `.set_pid()` + command entry "set pid".
+- Add `sys::set_pid()` + command entry "set pid".
 - Add `sys::set_pid_param()`.
-- Add `.set_slew()` + command entry "set slew".
-- Add `.set_bound()` + command entry "set bound".
+- Add `sys::set_slew()` + command entry "set slew".
+- Add `sys::set_bound()` + command entry "set bound".
 - Add `enum` `CMD_ID` to match with MCU `CMD_TABLE`.
+- Add `sys::set_pos()` + command entry "set pos".
+- Add `sys::sample_new()` + command entry "sample new".
+- Add `sys::step()` + command entry "step".
+- Add `sstr()` in `sys.h`; templated fold expression.
+- Add `sys::sample_data_handler`.
+- Add `uart::reciever::callback_sam` callback initialized to `sys::sample_data_handler`.
+- Add `UART_FRAME_TYPE::UART_SAMPLEDATA` case to `uart::reciever::worker()`.
+- Add `PID_CLAMP` to `enum` `class PID_PARAM` + add to `sys::set_pid`.
 
 # Changed
-- Updated semantics of set/get methods; e.g. `motor` -> `mot_id`, `uart_id` -> `cmd_id`.
-- Removed `enum class SYSTEM_MODE`.
+- Update semantics of set/get methods; e.g. `motor` -> `mot_id`, `uart_id` -> `cmd_id`.
+- Made `uart::buffer` namespace public.
+- Made `sys::stream_handler` handle buffer flushing to avoid interference.
+- Remove `enum class SYSTEM_MODE`.
+- Update GUI; add more to `GUI_DATA` and `MOT_DATA` structs in `shm_def.h`.
+- Update post build event; copy path for `gui.exe` is now more relative.
+- Update `enum` `UART_FRAME_TYPE`; prefixed with `UART_` and supports `UART_SAMPLEDATA`.
+- Update all methods using `UART_FRAME_TYPE` to use new prefix.
+- Update `enum` `CMD_ID` to support `UART_DO` commands.
+- Update `sys::echo()` to use new `UART_FRAME_TYPE` and `CMD_ID`.
+- Update `sys::set_slew()` to specify which `TARGET_SLEW` should be set.
 
 ---
 
@@ -31,8 +54,8 @@ All notable changes to this project will be documented in this file.
 ### [1.7.0] - 2019-04-20
 
 #### Added
-- Add `.set_gui()` + command entry "set gui".
-- Add `.set_msg()` + command entry "set msg".
+- Add `sys::set_gui()` + command entry "set gui".
+- Add `sys::set_msg()` + command entry "set msg".
 - Add `STREAM_FRAME_SIZE` `enum`.
 - Add `sys::stream_handler()`.
 - Add `sstr()` in `uart.h`; templated fold expression.
@@ -74,16 +97,16 @@ All notable changes to this project will be documented in this file.
 ### [1.5.0] - 2019-04-12
 
 #### Added
-- Add `.write_array()` + command entry "write array".
-- Add `.set_freq()` + command entry "set freq".
-- Add `.set_mode()` + command entry "set mode".
-- Add `.get_hal()` + command entry "get hal".
+- Add `sys::write_array()` + command entry "write array".
+- Add `sys::set_freq()` + command entry "set freq".
+- Add `sys::set_mode()` + command entry "set mode".
+- Add `sys::get_hal()` + command entry "get hal".
 
 #### Changed
 - Implemented `.queue_size()`
 
 #### Fixed
-- Size check in `.set_pwm()` and `.get_enc()` fixed; had wrong logic operator.
+- Size check in `sys::set_pwm()` and `sys::get_enc()` fixed; had wrong logic operator.
 
 ---
 
@@ -93,23 +116,23 @@ All notable changes to this project will be documented in this file.
 
 #### Added
 
-- Add `.set_pwm()` + command entry "set pwm".
-- Add `.get_enc()` + command entry "get enc".
+- Add `sys::set_pwm()` + command entry "set pwm".
+- Add `sys::get_enc()` + command entry "get enc".
 - Add `cmd_func(x)` define for shorter lambdas; currently unused.
 - 500ms delay in UART `EXCEPTION` handler state.
-- Add `.split_str()` method.
-- Add `.write_array()` prototype and placeholder + CMD table entry.
-- Add `.write_spi()` prototype and placeholder + CMD table entry.
+- Add `sys::split_str()` method.
+- Add `sys::write_array()` prototype and placeholder + CMD table entry.
+- Add `sys::write_spi()` prototype and placeholder + CMD table entry.
 
 #### Changed
 
-- Changed `.callback_msg()` thread lambda clause to `by value`.
-- Changed `.msgbox()` to take arguments by-value.
-- Changed `.msgbox()` thread lambda clause to `by value`.
+- Changed `uart::callback_msg()` thread lambda clause to `by value`.
+- Changed `sys::msgbox()` to take arguments by-value.
+- Changed `sys::msgbox()` thread lambda clause to `by value`.
 - Beautified CMD table; rename define `newcmd` to `subcmd`.
 - Update changelog layout to match that of `MCU/docs`.
 - Cleaned up layout.
-- Changed `.write()` to `.write_byte()` + updated CMD table.
+- Changed `sys::write()` to `sys::write_byte()` + updated CMD table.
 
 #### Fixed
 - Messages from CLI occasionally showed gibberish.
@@ -170,6 +193,8 @@ All notable changes to this project will be documented in this file.
 <!-- ----------------------------------------------------------------------------------------- -->
 
 [Unreleased]: #changelog
+[1.9.0]: #changelog
+[1.8.0]: #changelog
 [1.7.0]: #changelog
 [1.6.0]: #changelog
 [1.5.0]: #changelog

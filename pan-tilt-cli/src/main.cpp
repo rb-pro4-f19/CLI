@@ -21,6 +21,14 @@ int main()
 
 		{ "gui",			[](std::string args) { sys::gui(); } },
 
+		{ "sample",			[](std::string args) {}, subcmd{
+			{ "new",			[](std::string args) { sys::sample_new(args);	}},
+			{ "resend",			[](std::string args) { return;	}},
+			/// ...
+		})},
+
+		{ "step",			[](std::string args) { sys::step(args); } },
+
 		{ "write",			[](std::string args) {}, subcmd{
 			{ "byte",			[](std::string args) { sys::write_byte(args); }},
 			{ "array",			[](std::string args) { sys::write_array(args); }},

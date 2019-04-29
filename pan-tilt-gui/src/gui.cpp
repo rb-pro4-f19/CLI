@@ -6,10 +6,11 @@
 #define	BORDERL		"#  "
 #define	BORDERR		"  #"
 #define COLSEP		"  |  "
+#define COLSEP2		"     "
 
 #define COL1		16
 #define COL2		16
-#define COLPID		4
+#define COLPID		8
 #define COLSEPW		5
 #define FULLWIDTH	(COL1 + COL2) * 2 + COLSEPW
 
@@ -46,8 +47,8 @@ void gui::init()
 
 	// init data
 	gui::data.mode = 0;
-	gui::data.mot0 = { 0, 0, 0, 0.0f, false, 0, 0, 0.0f, 0.0f, 0.0f };
-	gui::data.mot1 = { 0, 0, 0, 0.0f, false, 0, 0, 0.0f, 0.0f, 0.0f };
+	//gui::data.mot0 = { 0, 0, 0, 0.0f, false, 0, 0, 0.0f, 0.0f, 0.0f };
+	//gui::data.mot1 = { 0, 0, 0, 0.0f, false, 0, 0, 0.0f, 0.0f, 0.0f };
 }
 
 void gui::hidecur()
@@ -123,10 +124,28 @@ void gui::draw()
 		default:	mode_str = "undefined";
 	}
 
-	LN(sstr("Mode: ", (int)gui::data.mode, " (", mode_str, ")"));
+	//LN(sstr("Mode: ", (int)gui::data.mode, " (", mode_str, ")"));
+
+	cout << BORDERL <<
+		setw(COL1) << left << "Mode:" << setw(COL2) << right << sstr(mode_str, " (", (int)gui::data.mode, ")") <<
+		setw(COLSEPW) << COLSEP2 <<
+		setw(COL1) << left << "Operation time:" << setw(COL2) << right << sstr((int)gui::data.op_time, " ms") <<
+	BORDERR << endl;
+
+
+	cout << BORDERL <<
+		setw(COL1) << left << "Calibrated:" << setw(COL2) << right << (gui::data.cal_done ? "true" : "false") <<
+		setw(COLSEPW) << COLSEP2 <<
+		setw(COL1) << left << "Boundary:" << setw(COL2) << right << (gui::data.bound ? "enabled" : "disabled") <<
+	BORDERR << endl;
+
+	cout << BORDERL <<
+		setw(COL1) << left << "Slew (r):" << setw(COL2) << right << (gui::data.slew_r ? "enabled" : "disabled") <<
+		setw(COLSEPW) << COLSEP2 <<
+		setw(COL1) << left << "Slew (y):" << setw(COL2) << right << (gui::data.slew_y ? "enabled" : "disabled") <<
+	BORDERR << endl;
 
 	EMPTYLN
-
 	BORDER
 	EMPTYLN
 
@@ -146,7 +165,7 @@ void gui::draw()
 	// empty line w/ # in middle
 	COLSEPLN
 
-		// PWM
+	// PWM
 	cout << BORDERL <<
 		setw(COL1) << left << "PWM:" << setw(COL2) << right << (int)gui::data.mot0.pwm <<
 		setw(COLSEPW) << COLSEP <<
@@ -161,11 +180,11 @@ void gui::draw()
 	BORDERR << endl;
 
 	// Speed
-	cout << BORDERL <<
+	/*cout << BORDERL <<
 		setw(COL1) << left << "Speed:" << setw(COL2) << right << (float)gui::data.mot0.spd <<
 		setw(COLSEPW) << COLSEP <<
 		setw(COL1) << left << "Speed:" << setw(COL2) << right << (float)gui::data.mot1.spd <<
-	BORDERR << endl;
+	BORDERR << endl;*/
 
 	// Encoder
 	cout << BORDERL <<
@@ -206,18 +225,25 @@ void gui::draw()
 	BORDERR << endl;
 
 	// PID / Kd
-	cout << BORDERL <<
+	/*cout << BORDERL <<
 		setw(COL1) << left << "" << setw(COLPID) << left << "Kd: " << setw(COL2 - COLPID) << right << (float)gui::data.mot0.pid_kd <<
 		setw(COLSEPW) << COLSEP <<
 		setw(COL1) << left << "" << setw(COLPID) << left << "Kd: " << setw(COL2 - COLPID) << right << (float)gui::data.mot1.pid_kd <<
+	BORDERR << endl;*/
+
+	// PID / Clamp
+	cout << BORDERL <<
+		setw(COL1) << left << "" << setw(COLPID) << left << "Clamp: " << setw(COL2 - COLPID) << right << (float)gui::data.mot0.pid_clamp <<
+		setw(COLSEPW) << COLSEP <<
+		setw(COL1) << left << "" << setw(COLPID) << left << "Clamp: " << setw(COL2 - COLPID) << right << (float)gui::data.mot1.pid_clamp <<
 	BORDERR << endl;
 
 	// PID / n
-	cout << BORDERL <<
+	/*cout << BORDERL <<
 		setw(COL1) << left << "" << setw(COLPID) << left << "n: " << setw(COL2 - COLPID) << right << (int)gui::data.mot0.pid_n <<
 		setw(COLSEPW) << COLSEP <<
 		setw(COL1) << left << "" << setw(COLPID) << left << "n: " << setw(COL2 - COLPID) << right << (int)gui::data.mot1.pid_n <<
-	BORDERR << endl;
+	BORDERR << endl;*/
 
 	// bottom border
 	EMPTYLN

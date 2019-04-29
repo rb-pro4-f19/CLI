@@ -25,13 +25,6 @@ namespace uart
 
 	// sub namespaces
 
-	namespace buffer
-	{
-		bool	has_data();
-		int		queue_size();
-		void	flush();
-	}
-
 	namespace reciever
 	{
 		
@@ -56,6 +49,7 @@ namespace uart
 		std::function<void(UART_FRAME frame)> callback_ack = nullptr;
 		std::function<void(UART_FRAME frame)> callback_msg = nullptr;
 		std::function<void(UART_FRAME frame)> callback_stm = nullptr;
+		std::function<void(UART_FRAME frame)> callback_sam = nullptr;
 
 		std::array
 		<uint8_t, UART_MAX_PAYLOAD_SIZE> frame_data;
@@ -351,7 +345,7 @@ int uart::buffer::queue_size()
 void uart::buffer::flush()
 {
 	PurgeComm(uart::com_handler, PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR);
-	//printf("COM buffer was flushed.\n");
+	printf("COM buffer was flushed.\n");
 }
 
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -462,21 +456,27 @@ void uart::reciever::worker()
 
 				switch (reciever::frame.type)
 				{
-					case UART_FRAME_TYPE::MSG:
+					case UART_FRAME_TYPE::UART_RESPONSE:
+					case UART_FRAME_TYPE::UART_ACK:
+
+						callback = reciever::callback_ack;
+						break;
+
+					case UART_FRAME_TYPE::UART_MSG:
 						
 						callback = reciever::callback_msg;
 						break;
 
-					case UART_FRAME_TYPE::STREAM:
+					case UART_FRAME_TYPE::UART_STREAM:
 
 						callback = reciever::callback_stm;
 						break;
 
-					case UART_FRAME_TYPE::RESPONSE:
-					case UART_FRAME_TYPE::ACK:
+					case UART_FRAME_TYPE::UART_SAMPLEDATA:
 
-						callback = reciever::callback_ack;
+						callback = reciever::callback_sam;
 						break;
+
 				}
 
 				// check callback
@@ -495,8 +495,8 @@ void uart::reciever::worker()
 				// print number of data in queue
 				//printf("Bytes in queue: %d.\n", uart::buffer::queue_size());
 
-				// flush if queue too large (outdated)
-				if (uart::buffer::queue_size() > UART_BUFFER_FLUSH_TH) { uart::buffer::flush(); }
+				//// flush if queue too large (outdated)
+				//if (uart::buffer::queue_size() > UART_BUFFER_FLUSH_TH) { uart::buffer::flush(); }
 
 				// reset reciever
 				reciever::state = LISTEN;
