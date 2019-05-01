@@ -4,17 +4,26 @@
 
 namespace sys
 {
+	
+	enum STREAM_FRAME_SIZE
+	{
+		STREAM_DAT_FRAME = 1,
+		STREAM_CMD_FRAME = 2
+	};
+
+	struct SAMPLE_DATAPOINT
+	{
+		uint32_t	time;
+		float 		value;
+	};
+	
 	GUI_DATA gui_data;
 
 	DWORD	gPidToFind = 0;
 	HWND	gTargetWindowHwnd = NULL;
 	BOOL CALLBACK myWNDENUMPROC(HWND hwCurHwnd, LPARAM lpMylp);
 
-	enum STREAM_FRAME_SIZE
-	{
-		STREAM_DAT_FRAME = 1,
-		STREAM_CMD_FRAME = 2
-	};
+	std::function<void(std::string filename)> callback_sample_data;
 
 	bool gui_open = false;
 
@@ -281,13 +290,13 @@ void sys::step(std::string args)
 	auto args_vec = cli::split_str(args);
 
 	// check that correct num of parameters was passed
-	if (args_vec.size() != 2) { return; }
+	if (args_vec.size() < 2) { return; }
 
 	// reset/home position
-	;
+	sys::set_pos("0 0");
 
 	// sleep a while
-	;
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 	// sample arguments
 	auto sample_args = sstr(args_vec[0], " ", "float", " ", args_vec[1]);
@@ -296,7 +305,21 @@ void sys::step(std::string args)
 	sys::sample_new(sample_args);
 
 	// set step position
-	;
+	sys::set_pos("90 90");
+
+	// plot data if necessary
+	if (args_vec.size() == 3 && args_vec[2] == "plot")
+	{
+		sys::callback_sample_data = [&](std::string filename)
+		{
+			// run MATLAB script/function
+			auto cmd = sstr("matlab -nodesktop -r \"plot_step('", filename, "')\"");
+			system(cmd.c_str());
+			
+			// reset plot callback
+			sys::callback_sample_data == nullptr;
+		};
+	}
 }
 
 void sys::stream_handler(uart::UART_FRAME frame)
@@ -348,11 +371,7 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 		USDC_EOT,
 	};
 
-	static struct SAMPLE_DATAPOINT
-	{
-		uint32_t	time;
-		float 		value;
-	} rx_data;
+	static SAMPLE_DATAPOINT rx_data;
 
 	constexpr auto max_num_bytes = sizeof(rx_data);
 
@@ -431,6 +450,9 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 
 				// print info
 				printf("\nFile \"%s\" was recieved; total of %d bytes.\n", filename.c_str(), rx_num_total_bytes);
+
+				// invoke callback if specified
+				if (sys::callback_sample_data != nullptr) { sys::callback_sample_data(filename); }
 
 				// reset everything in case reset is never called
 				rx_data_ptr = nullptr;
@@ -552,7 +574,7 @@ void sys::set_pos_single(uint8_t mot_id, float value)
 	tx_data.insert(tx_data.end(), &flt_array[0], &flt_array[sizeof(float)]);
 
 	// send tx_data
-	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
+	uart::send(uart::UART_FRAME_TYPE::UART_SET, tx_data);
 }
 
 void sys::set_gui(std::string args)
