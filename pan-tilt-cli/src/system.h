@@ -35,6 +35,7 @@ namespace sys
 		// UART_DO
 		DO_ECHO,
 		DO_SAMPLE,
+		DO_RESEND,
 
 		// UART_GET
 		GET_ECHO,

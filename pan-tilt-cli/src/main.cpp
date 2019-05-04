@@ -22,8 +22,8 @@ int main()
 		{ "gui",			[](std::string args) { sys::gui(); } },
 
 		{ "sample",			[](std::string args) {}, subcmd{
-			{ "new",			[](std::string args) { sys::sample_new(args);	}},
-			{ "resend",			[](std::string args) { return;	}},
+			{ "new",			[](std::string args) { sys::sample_new(args); }},
+			{ "resend",			[](std::string args) { sys::sample_resend(args); }},
 			/// ...
 		})},
 

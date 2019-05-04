@@ -16,13 +16,13 @@
  fileID = fopen(file_name,'r');
 
  % how is the format spec
- formatSpec = '%d ; %f';
+ formatSpec = '%d;%f';
 
  % the formation is preallocated
  sizeA = [2 Inf];
 
  % read from the file
- A = fscanf(fileID,formatSpec,sizeA);
+ A = fscanf(fileID, formatSpec, sizeA);
 
  % display that you read from file
  disp('Getting Data');
@@ -36,9 +36,14 @@
  % transpose
  A = A';
 
+ % data variables
+ data_x = A(:,1);
+ data_y = A(:,2);
+
  % plot
  disp('Plotting data');
- plot(A(:,1),A(:,2));
+ %plot(A(:,1), A(:,2));
+ plot(data_x, data_y);
 
  % Should save the figure
 

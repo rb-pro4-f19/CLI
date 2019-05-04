@@ -13,8 +13,8 @@ namespace sys
 
 	struct SAMPLE_DATAPOINT
 	{
-		uint32_t	time;
-		float 		value;
+		uint16_t	time;
+		int16_t		value;
 	};
 	
 	GUI_DATA gui_data;
@@ -226,6 +226,7 @@ void sys::sample_new(std::string args)
 	{
 		SV_ADDR,
 		SV_PID0_U,
+		SV_PID0_Y,
 	} target_var;
 
 	enum SAMPLE_TYPE
@@ -234,9 +235,9 @@ void sys::sample_new(std::string args)
 		ST_FLOATING,
 	} target_type;
 
-	static uint16_t	target_dur_ms = 0;
+	static uint16_t	target_samples = 0;
 	static uint32_t target_addr = 0;
-	static uint8_t	target_dur_ms_bytearr[sizeof(uint16_t)];
+	static uint8_t	target_samples_bytearr[sizeof(uint16_t)];
 	static uint8_t	target_addr_bytearr[sizeof(uint32_t)];
 	
 	if (args_vec[0].substr(0, 2) == "0x")
@@ -255,6 +256,7 @@ void sys::sample_new(std::string args)
 	// "sample new <var> <type> <dur>"
 	{
 		if (args_vec[0] == "pid0_u")	{ target_var = SV_PID0_U; }
+		if (args_vec[0] == "pid0_y")	{ target_var = SV_PID0_Y; }
 	}
 
 	// parse target type
@@ -262,8 +264,8 @@ void sys::sample_new(std::string args)
 	if (args_vec[1] == "float")	{ target_type = ST_FLOATING; }
 
 	// parse target duration & convert into byte arrray
-	target_dur_ms = std::stoi(args_vec[2]);
-	memcpy(target_dur_ms_bytearr, &target_dur_ms, sizeof(uint16_t));
+	target_samples = std::stoi(args_vec[2]);
+	memcpy(target_samples_bytearr, &target_samples, sizeof(uint16_t));
 
 	// construct variables to be correctly parsed by MCU & FPGA
 	CMD_ID cmd_id = DO_SAMPLE;
@@ -271,8 +273,8 @@ void sys::sample_new(std::string args)
 	// transmission vector
 	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, (uint8_t)target_var, (uint8_t)target_type};
 
-	// insert target_dur_ms (uint16_t) byte array into tx_data vector
-	tx_data.insert(tx_data.end(), &target_dur_ms_bytearr[0], &target_dur_ms_bytearr[sizeof(uint16_t)]);
+	// insert target_samples (uint16_t) byte array into tx_data vector
+	tx_data.insert(tx_data.end(), &target_samples_bytearr[0], &target_samples_bytearr[sizeof(uint16_t)]);
 
 	// insert target_addr (uint32_t) byte array into tx_data vector
 	tx_data.insert(tx_data.end(), &target_addr_bytearr[0], &target_addr_bytearr[sizeof(uint32_t)]);
@@ -296,7 +298,7 @@ void sys::step(std::string args)
 	sys::set_pos("0 0");
 
 	// sleep a while
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
 	// sample arguments
 	auto sample_args = sstr(args_vec[0], " ", "float", " ", args_vec[1]);
@@ -320,6 +322,14 @@ void sys::step(std::string args)
 			sys::callback_sample_data == nullptr;
 		};
 	}
+}
+
+void sys::sample_resend(std::string args)
+{
+	// create payload vector and transmit data
+	CMD_ID cmd_id = DO_RESEND;
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id };
+	uart::send(uart::UART_FRAME_TYPE::UART_DO, tx_data);
 }
 
 void sys::stream_handler(uart::UART_FRAME frame)
@@ -394,6 +404,7 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 			{
 				rx_data_ptr = nullptr;
 				sample_data.clear();
+				sample_data.reserve(8192);
 				rx_num_total_bytes = 0;
 
 				break;
@@ -420,6 +431,9 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 
 			case USDC_EOT:
 			{
+				// check if there is data to output
+				if (sample_data.empty()) { break; }
+				
 				// get system time
 				GetLocalTime(&lt);
 
@@ -539,6 +553,9 @@ void sys::set_mode(std::string args)
 
 void sys::set_pos(std::string args)
 {
+
+	// "set pos <pan> <tilt>"
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -548,6 +565,9 @@ void sys::set_pos(std::string args)
 	// parse desired angles
 	float theta_pan		= std::stof(args_vec[0]);
 	float theta_tilt	= std::stof(args_vec[1]);
+
+	// guard pan angle
+	//if (abs(theta_pan) > 80) 
 
 	// motor id's (SPI ADDRESS)
 	uint8_t mot0 = 0x01;
