@@ -67,6 +67,12 @@ void sys::connect(std::string com_port)
 
 	// connect UART to specified or default COM port
 	(com_port == "") ? uart::connect() : uart::connect(com_port.c_str());
+
+	// sleep a while
+	//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+	// disable msg
+	;
 }
 
 void sys::echo()
