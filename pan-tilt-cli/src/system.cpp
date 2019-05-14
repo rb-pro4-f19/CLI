@@ -4,11 +4,6 @@
 
 namespace sys
 {
-	GUI_DATA gui_data;
-
-	DWORD	gPidToFind = 0;
-	HWND	gTargetWindowHwnd = NULL;
-	BOOL CALLBACK myWNDENUMPROC(HWND hwCurHwnd, LPARAM lpMylp);
 
 	enum STREAM_FRAME_SIZE
 	{
@@ -16,10 +11,24 @@ namespace sys
 		STREAM_CMD_FRAME = 2
 	};
 
+	struct SAMPLE_DATAPOINT
+	{
+		uint16_t	time;
+		int16_t		value;
+	};
+
+	GUI_DATA gui_data;
+
+	DWORD	gPidToFind = 0;
+	HWND	gTargetWindowHwnd = NULL;
+	BOOL CALLBACK myWNDENUMPROC(HWND hwCurHwnd, LPARAM lpMylp);
+
+	std::function<void(std::string filename)> callback_sample_data;
+
 	bool gui_open = false;
 
 	namespace shm
-	{	
+	{
 		HANDLE h_map_file;
 		LPTSTR data_buf;
 
@@ -58,6 +67,12 @@ void sys::connect(std::string com_port)
 
 	// connect UART to specified or default COM port
 	(com_port == "") ? uart::connect() : uart::connect(com_port.c_str());
+
+	// sleep a while
+	//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+	// disable msg
+	;
 }
 
 void sys::echo()
@@ -72,7 +87,7 @@ void sys::gui()
 {
 	// check if allready open
 	//if (sys::gui_open) { return; }
-	
+
 	// init GUI data
 	sys::gui_data.mode = 0;
 	//sys::gui_data.mot0 = {  12, 80, 0, 0.0f, false, 0, 0, 10.0f, 0.0f, 0.0f };
@@ -113,14 +128,14 @@ void sys::gui()
 		FALSE,				// set handle inheritance to FALSE
 		CREATE_NEW_CONSOLE,	// no creation flags
 		NULL,				// use parent's environment block
-		NULL,				// use parent's starting directory 
+		NULL,				// use parent's starting directory
 		&si,				// pointer to STARTUPINFO structure
 		&pi					// pointer to PROCESS_INFORMATION structure (removed extra parentheses)
 	);
 
 	// sleep a bit
 	Sleep(100);
-	
+
 	// relocate GUI window
 	constexpr auto gui_pos_x = 70;
 	constexpr auto gui_pos_y = 70;
@@ -157,7 +172,7 @@ void sys::gui()
 
 	HWND con_hwnd	= GetConsoleWindow();
 	auto con_dpi	= GetDpiForWindow(con_hwnd);
-	
+
 	MoveWindow(
 		con_hwnd,
 		MulDiv(con_pos_x, con_dpi, 96),
@@ -217,6 +232,7 @@ void sys::sample_new(std::string args)
 	{
 		SV_ADDR,
 		SV_PID0_U,
+		SV_PID0_Y,
 	} target_var;
 
 	enum SAMPLE_TYPE
@@ -225,17 +241,17 @@ void sys::sample_new(std::string args)
 		ST_FLOATING,
 	} target_type;
 
-	static uint16_t	target_dur_ms = 0;
+	static uint16_t	target_samples = 0;
 	static uint32_t target_addr = 0;
-	static uint8_t	target_dur_ms_bytearr[sizeof(uint16_t)];
+	static uint8_t	target_samples_bytearr[sizeof(uint16_t)];
 	static uint8_t	target_addr_bytearr[sizeof(uint32_t)];
-	
+
 	if (args_vec[0].substr(0, 2) == "0x")
 	// "sample new 0x<addr> <type> <dur>"
 	{
 		// set target variable
 		target_var = SV_ADDR;
-		
+
 		// parse hex address from string
 		target_addr = std::stoi(args_vec[0].substr(2), 0, 16);
 
@@ -246,6 +262,7 @@ void sys::sample_new(std::string args)
 	// "sample new <var> <type> <dur>"
 	{
 		if (args_vec[0] == "pid0_u")	{ target_var = SV_PID0_U; }
+		if (args_vec[0] == "pid0_y")	{ target_var = SV_PID0_Y; }
 	}
 
 	// parse target type
@@ -253,17 +270,17 @@ void sys::sample_new(std::string args)
 	if (args_vec[1] == "float")	{ target_type = ST_FLOATING; }
 
 	// parse target duration & convert into byte arrray
-	target_dur_ms = std::stoi(args_vec[2]);
-	memcpy(target_dur_ms_bytearr, &target_dur_ms, sizeof(uint16_t));
+	target_samples = std::stoi(args_vec[2]);
+	memcpy(target_samples_bytearr, &target_samples, sizeof(uint16_t));
 
 	// construct variables to be correctly parsed by MCU & FPGA
 	CMD_ID cmd_id = DO_SAMPLE;
-	
+
 	// transmission vector
 	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, (uint8_t)target_var, (uint8_t)target_type};
 
-	// insert target_dur_ms (uint16_t) byte array into tx_data vector
-	tx_data.insert(tx_data.end(), &target_dur_ms_bytearr[0], &target_dur_ms_bytearr[sizeof(uint16_t)]);
+	// insert target_samples (uint16_t) byte array into tx_data vector
+	tx_data.insert(tx_data.end(), &target_samples_bytearr[0], &target_samples_bytearr[sizeof(uint16_t)]);
 
 	// insert target_addr (uint32_t) byte array into tx_data vector
 	tx_data.insert(tx_data.end(), &target_addr_bytearr[0], &target_addr_bytearr[sizeof(uint32_t)]);
@@ -282,13 +299,13 @@ void sys::step(std::string args)
 	auto args_vec = cli::split_str(args);
 
 	// check that correct num of parameters was passed
-	if (args_vec.size() != 2) { return; }
+	if (args_vec.size() < 2) { return; }
 
 	// reset/home position
-	;
+	sys::set_pos("0 0");
 
 	// sleep a while
-	;
+	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
 	// sample arguments
 	auto sample_args = sstr(args_vec[0], " ", "float", " ", args_vec[1]);
@@ -297,7 +314,29 @@ void sys::step(std::string args)
 	sys::sample_new(sample_args);
 
 	// set step position
-	;
+	sys::set_pos("90 90");
+
+	// plot data if necessary
+	if (args_vec.size() == 3 && args_vec[2] == "plot")
+	{
+		sys::callback_sample_data = [&](std::string filename)
+		{
+			// run MATLAB script/function
+			auto cmd = sstr("matlab -nodesktop -r \"plot_step('", filename, "')\"");
+			system(cmd.c_str());
+
+			// reset plot callback
+			sys::callback_sample_data == nullptr;
+		};
+	}
+}
+
+void sys::sample_resend(std::string args)
+{
+	// create payload vector and transmit data
+	CMD_ID cmd_id = DO_RESEND;
+	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id };
+	uart::send(uart::UART_FRAME_TYPE::UART_DO, tx_data);
 }
 
 void sys::stream_handler(uart::UART_FRAME frame)
@@ -341,7 +380,7 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 {
 	static SYSTEMTIME			lt;
 	static CString				timestamp;
-	
+
 	enum UART_SAMPLEDATA_CMD
 	{
 		USDC_RESET,
@@ -349,11 +388,7 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 		USDC_EOT,
 	};
 
-	static struct SAMPLE_DATAPOINT
-	{
-		uint32_t	time;
-		float 		value;
-	} rx_data;
+	static SAMPLE_DATAPOINT rx_data;
 
 	constexpr auto max_num_bytes = sizeof(rx_data);
 
@@ -376,6 +411,7 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 			{
 				rx_data_ptr = nullptr;
 				sample_data.clear();
+				sample_data.reserve(8192);
 				rx_num_total_bytes = 0;
 
 				break;
@@ -388,10 +424,10 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 				{
 					sample_data.push_back(rx_data);
 				}
-				
+
 				// reset rx_data
 				memset(&rx_data, 0, sizeof(rx_data));
-				
+
 				// set pointer
 				rx_data_ptr = (uint8_t*)(&rx_data);
 
@@ -402,12 +438,15 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 
 			case USDC_EOT:
 			{
+				// check if there is data to output
+				if (sample_data.empty()) { break; }
+
 				// get system time
 				GetLocalTime(&lt);
 
 				// format timestamp
 				timestamp.Format
-				(	
+				(
 					"%02d%02d_%02d%02d%02d",
 					lt.wMonth,
 					lt.wDay,
@@ -415,12 +454,12 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 					lt.wMinute,
 					lt.wSecond
 				);
-				
+
 				// format filename
 				CreateDirectory("sample_data/", NULL);
 				std::string filename = "sample_data/samples_" + std::string(timestamp) + ".dat";
 				std::ofstream out_fstream(filename);
-				
+
 				// output data to file
 				for (const auto& v : sample_data)
 				{
@@ -432,6 +471,9 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 
 				// print info
 				printf("\nFile \"%s\" was recieved; total of %d bytes.\n", filename.c_str(), rx_num_total_bytes);
+
+				// invoke callback if specified
+				if (sys::callback_sample_data != nullptr) { sys::callback_sample_data(filename); }
 
 				// reset everything in case reset is never called
 				rx_data_ptr = nullptr;
@@ -487,7 +529,7 @@ void sys::write_spi(std::string args)
 void sys::set_mode(std::string args)
 {
 	// set mode <mode>
-	
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -533,6 +575,9 @@ void sys::set_pos(std::string args)
 	float theta_pan		= std::stof(args_vec[0]);
 	float theta_tilt	= std::stof(args_vec[1]);
 
+	// guard pan angle
+	//if (abs(theta_pan) > 80)
+
 	// motor id's (SPI ADDRESS)
 	uint8_t mot0 = 0x01;
 	uint8_t mot1 = 0x02;
@@ -558,13 +603,13 @@ void sys::set_pos_single(uint8_t mot_id, float value)
 	tx_data.insert(tx_data.end(), &flt_array[0], &flt_array[sizeof(float)]);
 
 	// send tx_data
-	uart::send(uart::UART_FRAME_TYPE::SET, tx_data);
+	uart::send(uart::UART_FRAME_TYPE::UART_SET, tx_data);
 }
 
 void sys::set_gui(std::string args)
 {
 	// set gui <bool>
-	
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -589,7 +634,7 @@ void sys::set_msg(std::string args)
 
 	// check that correct num of parameters was passed
 	if (args_vec.size() != 1) { return; }
-	
+
 	// construct variables to be correctly parsed by MCU & FPGA
 	uint8_t option  = std::stoi(args);
 	CMD_ID cmd_id = SET_MSG;
@@ -709,7 +754,7 @@ void sys::set_pid_param(uint8_t pid_id, PID_PARAM pid_param, float value)
 void sys::set_slew(std::string args)
 {
 	// set slew <id> <bool> e.g. "set slew r 0"
-	
+
 	// construcs
 	enum TARGET_SLEW
 	{

@@ -490,7 +490,7 @@ void uart::reciever::worker()
 
 				// perform callback on detached thread
 				std::thread callback_thread(callback, reciever::frame);
-				callback_thread.detach();
+				callback_thread.join();
 
 				// print number of data in queue
 				//printf("Bytes in queue: %d.\n", uart::buffer::queue_size());
@@ -511,7 +511,7 @@ void uart::reciever::worker()
 				printf("\n");
 
 				// flush buffer
-				buffer::flush();
+				//buffer::flush();
 				
 				// reset
 				reciever::state = LISTEN;
