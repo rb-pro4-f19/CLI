@@ -276,6 +276,7 @@ void sys::step(std::string args)
 {
 	// step response command
 	// "step pid<pid>_<var> <dur_ms>" e.g. "step pid0_u 500"
+	// "step pid<pid>_<var> <dur_ms> plot" to enable plotting afterwards e.g. "step pid0_u 500 plot"
 
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
@@ -485,6 +486,8 @@ void sys::write_spi(std::string args)
 
 void sys::set_mode(std::string args)
 {
+	// set mode <mode>
+	
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -517,6 +520,9 @@ void sys::set_mode(std::string args)
 
 void sys::set_pos(std::string args)
 {
+	// set the position given in degrees
+	// set pos <pan> <tilt>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -557,6 +563,8 @@ void sys::set_pos_single(uint8_t mot_id, float value)
 
 void sys::set_gui(std::string args)
 {
+	// set gui <bool>
+	
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -574,6 +582,8 @@ void sys::set_gui(std::string args)
 
 void sys::set_msg(std::string args)
 {
+	// set msg <bool>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -591,6 +601,8 @@ void sys::set_msg(std::string args)
 
 void sys::set_pwm(std::string args)
 {
+	// set pwm <id> <pwm>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -611,6 +623,8 @@ void sys::set_pwm(std::string args)
 
 void sys::set_freq(std::string args)
 {
+	// set freq <id> <freq>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -631,6 +645,9 @@ void sys::set_freq(std::string args)
 
 void sys::set_pid(std::string args)
 {
+	// set pid <id> <param> <val>
+	// set pid <id> all <kp> <ki> <kd>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -691,6 +708,8 @@ void sys::set_pid_param(uint8_t pid_id, PID_PARAM pid_param, float value)
 
 void sys::set_slew(std::string args)
 {
+	// set slew <id> <bool> e.g. "set slew r 0"
+	
 	// construcs
 	enum TARGET_SLEW
 	{
@@ -723,6 +742,8 @@ void sys::set_slew(std::string args)
 
 void sys::set_bound(std::string args)
 {
+	// set bound <bool>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -740,6 +761,8 @@ void sys::set_bound(std::string args)
 
 void sys::get_enc(std::string args)
 {
+	// get enc <id>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -759,6 +782,8 @@ void sys::get_enc(std::string args)
 
 void sys::get_hal(std::string args)
 {
+	// get hal <id>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
