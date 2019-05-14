@@ -4,7 +4,7 @@
 
 namespace sys
 {
-	
+
 	enum STREAM_FRAME_SIZE
 	{
 		STREAM_DAT_FRAME = 1,
@@ -16,7 +16,7 @@ namespace sys
 		uint16_t	time;
 		int16_t		value;
 	};
-	
+
 	GUI_DATA gui_data;
 
 	DWORD	gPidToFind = 0;
@@ -28,7 +28,7 @@ namespace sys
 	bool gui_open = false;
 
 	namespace shm
-	{	
+	{
 		HANDLE h_map_file;
 		LPTSTR data_buf;
 
@@ -87,7 +87,7 @@ void sys::gui()
 {
 	// check if allready open
 	//if (sys::gui_open) { return; }
-	
+
 	// init GUI data
 	sys::gui_data.mode = 0;
 	//sys::gui_data.mot0 = {  12, 80, 0, 0.0f, false, 0, 0, 10.0f, 0.0f, 0.0f };
@@ -128,14 +128,14 @@ void sys::gui()
 		FALSE,				// set handle inheritance to FALSE
 		CREATE_NEW_CONSOLE,	// no creation flags
 		NULL,				// use parent's environment block
-		NULL,				// use parent's starting directory 
+		NULL,				// use parent's starting directory
 		&si,				// pointer to STARTUPINFO structure
 		&pi					// pointer to PROCESS_INFORMATION structure (removed extra parentheses)
 	);
 
 	// sleep a bit
 	Sleep(100);
-	
+
 	// relocate GUI window
 	constexpr auto gui_pos_x = 70;
 	constexpr auto gui_pos_y = 70;
@@ -172,7 +172,7 @@ void sys::gui()
 
 	HWND con_hwnd	= GetConsoleWindow();
 	auto con_dpi	= GetDpiForWindow(con_hwnd);
-	
+
 	MoveWindow(
 		con_hwnd,
 		MulDiv(con_pos_x, con_dpi, 96),
@@ -245,13 +245,13 @@ void sys::sample_new(std::string args)
 	static uint32_t target_addr = 0;
 	static uint8_t	target_samples_bytearr[sizeof(uint16_t)];
 	static uint8_t	target_addr_bytearr[sizeof(uint32_t)];
-	
+
 	if (args_vec[0].substr(0, 2) == "0x")
 	// "sample new 0x<addr> <type> <dur>"
 	{
 		// set target variable
 		target_var = SV_ADDR;
-		
+
 		// parse hex address from string
 		target_addr = std::stoi(args_vec[0].substr(2), 0, 16);
 
@@ -275,7 +275,7 @@ void sys::sample_new(std::string args)
 
 	// construct variables to be correctly parsed by MCU & FPGA
 	CMD_ID cmd_id = DO_SAMPLE;
-	
+
 	// transmission vector
 	std::vector<uint8_t> tx_data = { (uint8_t)cmd_id, (uint8_t)target_var, (uint8_t)target_type};
 
@@ -293,6 +293,7 @@ void sys::step(std::string args)
 {
 	// step response command
 	// "step pid<pid>_<var> <dur_ms>" e.g. "step pid0_u 500"
+	// "step pid<pid>_<var> <dur_ms> plot" to enable plotting afterwards e.g. "step pid0_u 500 plot"
 
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
@@ -323,7 +324,7 @@ void sys::step(std::string args)
 			// run MATLAB script/function
 			auto cmd = sstr("matlab -nodesktop -r \"plot_step('", filename, "')\"");
 			system(cmd.c_str());
-			
+
 			// reset plot callback
 			sys::callback_sample_data == nullptr;
 		};
@@ -379,7 +380,7 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 {
 	static SYSTEMTIME			lt;
 	static CString				timestamp;
-	
+
 	enum UART_SAMPLEDATA_CMD
 	{
 		USDC_RESET,
@@ -423,10 +424,10 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 				{
 					sample_data.push_back(rx_data);
 				}
-				
+
 				// reset rx_data
 				memset(&rx_data, 0, sizeof(rx_data));
-				
+
 				// set pointer
 				rx_data_ptr = (uint8_t*)(&rx_data);
 
@@ -439,13 +440,13 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 			{
 				// check if there is data to output
 				if (sample_data.empty()) { break; }
-				
+
 				// get system time
 				GetLocalTime(&lt);
 
 				// format timestamp
 				timestamp.Format
-				(	
+				(
 					"%02d%02d_%02d%02d%02d",
 					lt.wMonth,
 					lt.wDay,
@@ -453,12 +454,12 @@ void sys::sample_data_handler(uart::UART_FRAME frame)
 					lt.wMinute,
 					lt.wSecond
 				);
-				
+
 				// format filename
 				CreateDirectory("sample_data/", NULL);
 				std::string filename = "sample_data/samples_" + std::string(timestamp) + ".dat";
 				std::ofstream out_fstream(filename);
-				
+
 				// output data to file
 				for (const auto& v : sample_data)
 				{
@@ -527,6 +528,8 @@ void sys::write_spi(std::string args)
 
 void sys::set_mode(std::string args)
 {
+	// set mode <mode>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -559,8 +562,8 @@ void sys::set_mode(std::string args)
 
 void sys::set_pos(std::string args)
 {
-
-	// "set pos <pan> <tilt>"
+	// set the position given in degrees
+	// set pos <pan> <tilt>
 
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
@@ -573,7 +576,7 @@ void sys::set_pos(std::string args)
 	float theta_tilt	= std::stof(args_vec[1]);
 
 	// guard pan angle
-	//if (abs(theta_pan) > 80) 
+	//if (abs(theta_pan) > 80)
 
 	// motor id's (SPI ADDRESS)
 	uint8_t mot0 = 0x01;
@@ -605,6 +608,8 @@ void sys::set_pos_single(uint8_t mot_id, float value)
 
 void sys::set_gui(std::string args)
 {
+	// set gui <bool>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -622,12 +627,14 @@ void sys::set_gui(std::string args)
 
 void sys::set_msg(std::string args)
 {
+	// set msg <bool>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
 	// check that correct num of parameters was passed
 	if (args_vec.size() != 1) { return; }
-	
+
 	// construct variables to be correctly parsed by MCU & FPGA
 	uint8_t option  = std::stoi(args);
 	CMD_ID cmd_id = SET_MSG;
@@ -639,6 +646,8 @@ void sys::set_msg(std::string args)
 
 void sys::set_pwm(std::string args)
 {
+	// set pwm <id> <pwm>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -659,6 +668,8 @@ void sys::set_pwm(std::string args)
 
 void sys::set_freq(std::string args)
 {
+	// set freq <id> <freq>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -679,6 +690,9 @@ void sys::set_freq(std::string args)
 
 void sys::set_pid(std::string args)
 {
+	// set pid <id> <param> <val>
+	// set pid <id> all <kp> <ki> <kd>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -739,6 +753,8 @@ void sys::set_pid_param(uint8_t pid_id, PID_PARAM pid_param, float value)
 
 void sys::set_slew(std::string args)
 {
+	// set slew <id> <bool> e.g. "set slew r 0"
+
 	// construcs
 	enum TARGET_SLEW
 	{
@@ -771,6 +787,8 @@ void sys::set_slew(std::string args)
 
 void sys::set_bound(std::string args)
 {
+	// set bound <bool>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -788,6 +806,8 @@ void sys::set_bound(std::string args)
 
 void sys::get_enc(std::string args)
 {
+	// get enc <id>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
@@ -807,6 +827,8 @@ void sys::get_enc(std::string args)
 
 void sys::get_hal(std::string args)
 {
+	// get hal <id>
+
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
 
