@@ -233,6 +233,8 @@ void sys::sample_new(std::string args)
 		SV_ADDR,
 		SV_PID0_U,
 		SV_PID0_Y,
+		SV_PID1_U,
+		SV_PID1_Y,
 	} target_var;
 
 	enum SAMPLE_TYPE
@@ -263,6 +265,8 @@ void sys::sample_new(std::string args)
 	{
 		if (args_vec[0] == "pid0_u")	{ target_var = SV_PID0_U; }
 		if (args_vec[0] == "pid0_y")	{ target_var = SV_PID0_Y; }
+		if (args_vec[0] == "pid1_u")	{ target_var = SV_PID1_U; }
+		if (args_vec[0] == "pid1_y")	{ target_var = SV_PID1_Y; }
 	}
 
 	// parse target type
@@ -297,6 +301,7 @@ void sys::step(std::string args)
 
 	// split input delimited by spaces into vector of strings
 	auto args_vec = cli::split_str(args);
+	auto pid_id = args_vec[0].substr(3, 1);
 
 	// check that correct num of parameters was passed
 	if (args_vec.size() < 2) { return; }
@@ -313,8 +318,10 @@ void sys::step(std::string args)
 	// begin sampling
 	sys::sample_new(sample_args);
 
-	// set step position
-	sys::set_pos("90 90");
+	// set step position according to pid_id
+	// 0 = tilt & 1 = pan
+	if (pid_id == "0") { sys::set_pos("0 90"); }
+	if (pid_id == "1") { sys::set_pos("45 0"); }
 
 	// plot data if necessary
 	if (args_vec.size() == 3 && args_vec[2] == "plot")
