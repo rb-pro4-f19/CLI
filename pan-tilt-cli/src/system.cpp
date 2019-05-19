@@ -233,8 +233,10 @@ void sys::sample_new(std::string args)
 		SV_ADDR,
 		SV_PID0_U,
 		SV_PID0_Y,
+		SV_PID0_R,
 		SV_PID1_U,
 		SV_PID1_Y,
+		SV_PID1_R
 	} target_var;
 
 	enum SAMPLE_TYPE
@@ -265,8 +267,10 @@ void sys::sample_new(std::string args)
 	{
 		if (args_vec[0] == "pid0_u")	{ target_var = SV_PID0_U; }
 		if (args_vec[0] == "pid0_y")	{ target_var = SV_PID0_Y; }
+		if (args_vec[0] == "pid0_r")	{ target_var = SV_PID0_R; }
 		if (args_vec[0] == "pid1_u")	{ target_var = SV_PID1_U; }
 		if (args_vec[0] == "pid1_y")	{ target_var = SV_PID1_Y; }
+		if (args_vec[0] == "pid1_r")	{ target_var = SV_PID1_R; }
 	}
 
 	// parse target type
